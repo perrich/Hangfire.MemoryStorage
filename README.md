@@ -1,7 +1,8 @@
 Hangfire.MemoryStorage
 ========
 
-A memory storage for Hangfire. 
+A memory storage for Hangfire (http://hangfire.io/).
+
 It can be useful to check behaviour and use it in development environment. Please note that it should not be used in production (no integrity and no thread safe event if many case are managed).
 
 
