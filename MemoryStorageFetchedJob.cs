@@ -16,8 +16,8 @@ namespace Hangfire.MemoryStorage
             JobId = queue.JobId;
         }
 
-        public int Id { get; }
-        public string JobId { get; }
+        public int Id { get; private set; }
+        public string JobId { get; private set; }
 
         public void RemoveFromQueue()
         {
