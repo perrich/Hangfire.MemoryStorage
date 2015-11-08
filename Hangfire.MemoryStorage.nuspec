@@ -9,11 +9,11 @@
 	<licenseUrl>http://www.apache.org/licenses/LICENSE-2.0</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>A memory storage for Hangfire</description>
-    <releaseNotes>First release.</releaseNotes>
+    <releaseNotes>Second release.</releaseNotes>
     <copyright>Copyright 2015</copyright>
     <tags>Hangfire Storage</tags>
     <dependencies>
-      <dependency id="Hangfire.Core" version="1.4.3" />
+      <dependency id="Hangfire.Core" version="1.5.2" />
       <dependency id="Newtonsoft.Json" version="6.0.8" />
       <dependency id="Owin" version="1.0.0" />
     </dependencies>
