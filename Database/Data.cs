@@ -18,22 +18,19 @@ namespace Hangfire.MemoryStorage.Database
             return dict.Values.Cast<T>();
         }
 
-        public static IEnumerable<IExpirable> GetExpirables(Type type)
+        public static ICollection<object> GetEnumeration(Type type)
         {
-            if (!typeof(IExpirable).IsAssignableFrom(type))
-                return new List<IExpirable>();
-
             var dict = GetDictionary(type);
-            return (IEnumerable<IExpirable>)dict.Values;
+            return dict.Values;
         }
 
-        public static T GetOrCreate<T>(string key, T element)
+        public static T GetOrCreate<T,K>(K key, T element) where T : IIdentifiedData<K>
         {
             var dict = GetDictionary(typeof(T));
             return (T)dict.GetOrAdd(key, element);
         }
 
-        public static T Get<T>(string key) where T : class
+        public static T Get<T>(string key) where T : IIdentifiedData<string>
         {
             object obj = null;
             var dict = GetDictionary(typeof(T));
@@ -41,7 +38,7 @@ namespace Hangfire.MemoryStorage.Database
             return (T)obj;
         }
 
-        public static T Get<T>(int key) where T : class
+        public static T Get<T>(int key) where T : IIdentifiedData<int>
         {
             object obj = null;
             var dict = GetDictionary(typeof(T));
@@ -49,60 +46,40 @@ namespace Hangfire.MemoryStorage.Database
             return (T)obj;
         }
 
-        internal static void Create<T>(IEnumerable<IIntIdentifiedData> elements)
+        internal static void Create<K>(IEnumerable<IIdentifiedData<K>> elements)
         {
-            var dict = GetDictionary(typeof(T));
-            foreach (var element in elements)
+            if (elements.Any())
             {
-                dict.TryAdd(element.Id, element);
+                var dict = GetDictionary(elements.First().GetType());
+                foreach (var element in elements)
+                {
+                    dict.TryAdd(element.Id, element);
+                }
             }
         }
 
-        public static T Create<T>(IIntIdentifiedData element)
+        public static void Create<K>(IIdentifiedData<K> element)
         {
-            var dict = GetDictionary(typeof(T));
+            var dict = GetDictionary(element.GetType());
             dict.TryAdd(element.Id, element);
-
-            return (T)element;
         }
 
-        public static T Create<T>(IStringIdentifiedData element)
+        public static void Delete<K>(IIdentifiedData<K> element)
         {
-            var dict = GetDictionary(typeof(T));
-            dict.TryAdd(element.Id, element);
-
-            return (T)element;
-        }
-
-        public static void Delete(Type type, IIntIdentifiedData element)
-        {
-            var dict = GetDictionary(type);
+            var dict = GetDictionary(element.GetType());
             dict.Remove(element.Id);
         }
 
-        public static void Delete(Type type, IEnumerable<IIntIdentifiedData> elements)
+        public static void Delete<K>(IEnumerable<IIdentifiedData<K>> elements)
         {
-            var dict = GetDictionary(type);
-
-            foreach (var element in elements)
+            if (elements.Any())
             {
-                dict.Remove(element.Id);
-            }
-        }
+                var dict = GetDictionary(elements.First().GetType());
 
-        public static void Delete(Type type, IStringIdentifiedData element)
-        {
-            var dict = GetDictionary(type);
-            dict.Remove(element.Id);
-        }
-
-        public static void Delete(Type type, IEnumerable<IStringIdentifiedData> elements)
-        {
-            var dict = GetDictionary(type);
-
-            foreach (var element in elements)
-            {
-                dict.Remove(element.Id);
+                foreach (var element in elements)
+                {
+                    dict.Remove(element.Id);
+                }
             }
         }
 

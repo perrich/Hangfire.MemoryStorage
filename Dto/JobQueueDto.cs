@@ -2,7 +2,7 @@
 
 namespace Hangfire.MemoryStorage.Dto
 {
-    public class JobQueueDto : IIntIdentifiedData
+    public class JobQueueDto : IIdentifiedData<int>
     {
         public string JobId { get; set; }
         public string Queue { get; set; }

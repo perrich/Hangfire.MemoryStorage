@@ -49,14 +49,16 @@ namespace Hangfire.MemoryStorage
 
             var invocationData = InvocationData.Serialize(job);
 
-            var jobData = Data.Create<JobDto>(new JobDto
+            var jobData = new JobDto
             {
                 Id = Guid.NewGuid().ToString(),
                 InvocationData = JobHelper.ToJson(invocationData),
                 Arguments = invocationData.Arguments,
                 CreatedAt = createdAt,
                 ExpireAt = createdAt.Add(expireIn)
-            });
+            };
+
+            Data.Create(jobData);
 
             if (parameters.Count > 0)
             {
@@ -68,7 +70,7 @@ namespace Hangfire.MemoryStorage
                     Value = kvp.Value
                 }).ToList();
 
-                Data.Create<JobParameterDto>(list);
+                Data.Create(list);
             }
 
             return jobData.Id;
@@ -324,7 +326,7 @@ namespace Hangfire.MemoryStorage
             var server = Data.Get<ServerDto>(serverId);
             if (server != null)
             {
-                Data.Delete(typeof (ServerDto), server);
+                Data.Delete(server);
             }
         }
 
@@ -338,7 +340,7 @@ namespace Hangfire.MemoryStorage
             var timeOutAt = DateTime.UtcNow.Add(timeOut.Negate());
             var servers = Data.GetEnumeration<ServerDto>().Where(s => s.LastHeartbeat < timeOutAt).ToList();
 
-            Data.Delete(typeof (ServerDto), servers);
+            Data.Delete(servers);
 
             return servers.Count;
         }
@@ -351,12 +353,14 @@ namespace Hangfire.MemoryStorage
             var parameter = Data.GetEnumeration<JobParameterDto>().SingleOrDefault(s => s.JobId == id && s.Name == name);
             if (parameter == null)
             {
-                parameter = Data.Create<JobParameterDto>(new JobParameterDto
+                parameter = new JobParameterDto
                 {
                     Id = AutoIncrementIdGenerator.GenerateId(typeof (JobParameterDto)),
                     JobId = id,
                     Name = name
-                });
+                };
+
+                Data.Create(parameter);
             }
 
             parameter.Value = value;
@@ -372,12 +376,14 @@ namespace Hangfire.MemoryStorage
                 var hash = Data.GetEnumeration<HashDto>().SingleOrDefault(h => h.Key == key && h.Field == kvp.Key);
                 if (hash == null)
                 {
-                    hash = Data.Create<HashDto>(new HashDto
+                    hash = new HashDto
                     {
                         Id = AutoIncrementIdGenerator.GenerateId(typeof (HashDto)),
                         Key = key,
                         Field = kvp.Key
-                    });
+                    };
+
+                    Data.Create(hash);
                 }
 
                 hash.Value = kvp.Value;

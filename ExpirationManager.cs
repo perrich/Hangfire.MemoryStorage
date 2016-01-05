@@ -4,6 +4,7 @@ using System.Threading;
 using Hangfire.MemoryStorage.Database;
 using Hangfire.MemoryStorage.Dto;
 using Hangfire.Server;
+using System.Collections.Generic;
 
 namespace Hangfire.MemoryStorage
 {
@@ -34,14 +35,16 @@ namespace Hangfire.MemoryStorage
 
             foreach (var t in Types)
             {
+                if (!typeof(IExpirable).IsAssignableFrom(t))
+                    continue;
+
                 int removedCount;
 
                 do
                 {
-                    var table = Data.GetExpirables(t);
+                    var table = Data.GetEnumeration(t);
                     var data = (from d in table
-                        where d.ExpireAt < now
-                        orderby d.ExpireAt
+                        where ((IExpirable)d).ExpireAt < now
                         select d).Take(NumberOfRecordsInSinglePass).ToList();
 
                     removedCount = data.Count;
@@ -51,10 +54,14 @@ namespace Hangfire.MemoryStorage
                         continue;
                     }
 
-                    if (data is IIntIdentifiedData)
-                        Data.Delete(t, (IIntIdentifiedData) data);
-                    else if (data is IStringIdentifiedData)
-                        Data.Delete(t, (IStringIdentifiedData) data);
+                    if (typeof(IIdentifiedData<int>).IsAssignableFrom(t))
+                    {
+                        Data.Delete(data.Cast<IIdentifiedData<int>>());
+                    }
+                    else if (typeof(IIdentifiedData<string>).IsAssignableFrom(t))
+                    {
+                        Data.Delete(data.Cast<IIdentifiedData<string>>());
+                    }
 
                     cancellationToken.WaitHandle.WaitOne(DelayBetweenPasses);
                     cancellationToken.ThrowIfCancellationRequested();

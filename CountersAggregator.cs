@@ -40,13 +40,15 @@ namespace Hangfire.MemoryStorage
 
                     if (aggregate == null)
                     {
-                        aggregate = Data.Create<AggregatedCounterDto>(new AggregatedCounterDto
+                        aggregate = new AggregatedCounterDto
                         {
-                            Id = AutoIncrementIdGenerator.GenerateId(typeof (AggregatedCounterDto)),
+                            Id = AutoIncrementIdGenerator.GenerateId(typeof(AggregatedCounterDto)),
                             Key = counter.Key,
                             Value = 0,
                             ExpireAt = DateTime.MinValue
-                        });
+                        };
+
+                        Data.Create(aggregate);
                     }
 
                     aggregate.Value += counter.Value;
@@ -59,7 +61,7 @@ namespace Hangfire.MemoryStorage
 
                 removedCount = counters.Count();
 
-                Data.Delete(typeof (CounterDto), counters);
+                Data.Delete(counters);
 
                 if (removedCount > 0)
                 {

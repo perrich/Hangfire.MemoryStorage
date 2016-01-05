@@ -24,7 +24,7 @@ namespace Hangfire.MemoryStorage
             var queue = Data.Get<JobQueueDto>(Id);
             if (queue != null)
             {
-                Data.Delete(typeof (JobQueueDto), queue);
+                Data.Delete(queue);
             }
 
             _removedFromQueue = true;

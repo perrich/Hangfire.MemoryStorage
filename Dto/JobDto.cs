@@ -2,7 +2,7 @@
 
 namespace Hangfire.MemoryStorage.Dto
 {
-    public class JobDto : IExpirable, IStringIdentifiedData
+    public class JobDto : IExpirable, IIdentifiedData<string>
     {
         public StateDto State { get; set; }
 
