@@ -70,7 +70,7 @@ namespace Hangfire.MemoryStorage
                     Value = kvp.Value
                 }).ToList();
 
-                Data.Create(list);
+                jobData.Parameters = list;
             }
 
             return jobData.Id;
@@ -193,9 +193,15 @@ namespace Hangfire.MemoryStorage
             Guard.ArgumentNotNull(id, "id");
             Guard.ArgumentNotNull(name, "name");
 
-            var job = Data.GetEnumeration<JobParameterDto>().SingleOrDefault(p => p.JobId == id && p.Name == name);
+            var jobData = Data.Get<JobDto>(id);
+            if (jobData == null)
+            {
+                return null;
+            }
 
-            return job == null ? null : job.Value;
+            var parameter = jobData.Parameters.Where(p => p.Name == name).FirstOrDefault();
+            
+            return parameter == null ? null : parameter.Value;
         }
 
         public override long GetListCount(string key)
@@ -350,7 +356,14 @@ namespace Hangfire.MemoryStorage
             Guard.ArgumentNotNull(id, "id");
             Guard.ArgumentNotNull(name, "name");
 
-            var parameter = Data.GetEnumeration<JobParameterDto>().SingleOrDefault(s => s.JobId == id && s.Name == name);
+            var jobData = Data.Get<JobDto>(id);
+            if (jobData == null)
+            {
+                return;
+            }
+
+            var parameter = jobData.Parameters.Where(p => p.Name == name).FirstOrDefault();
+
             if (parameter == null)
             {
                 parameter = new JobParameterDto
@@ -360,7 +373,7 @@ namespace Hangfire.MemoryStorage
                     Name = name
                 };
 
-                Data.Create(parameter);
+                jobData.Parameters.Add(parameter);
             }
 
             parameter.Value = value;

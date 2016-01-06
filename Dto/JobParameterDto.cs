@@ -1,6 +1,6 @@
 ﻿namespace Hangfire.MemoryStorage.Dto
 {
-    public class JobParameterDto : IIdentifiedData<int>
+    public class JobParameterDto
     {
         public string JobId { get; set; }
         public string Name { get; set; }

@@ -7,6 +7,7 @@ using Hangfire.MemoryStorage.Dto;
 using Hangfire.MemoryStorage.Utilities;
 using Hangfire.Storage;
 using IHangfireState = Hangfire.States.IState;
+using Hangfire.Storage.Monitoring;
 
 namespace Hangfire.MemoryStorage
 {
@@ -21,17 +22,34 @@ namespace Hangfire.MemoryStorage
         {
             QueueCommand(() =>
             {
-                var stateDto = new StateDto
+                var job = Data.Get<JobDto>(jobId);
+                if (job == null)
                 {
-                    Id = AutoIncrementIdGenerator.GenerateId(typeof (StateDto)),
+                    return;
+                }
+
+                DateTime createdAt = DateTime.UtcNow;
+                Dictionary<string, string> serializedStateData = state.SerializeData();
+
+                var stateData = new StateDto
+                {
+                    Id = AutoIncrementIdGenerator.GenerateId(typeof(StateDto)),
                     JobId = jobId,
                     Name = state.Name,
                     Reason = state.Reason,
-                    CreatedAt = DateTime.UtcNow,
-                    Data = JobHelper.ToJson(state.SerializeData())
+                    CreatedAt = createdAt,
+                    Data = JobHelper.ToJson(serializedStateData)
+                };
+                
+                var stateHistory = new StateHistoryDto
+                {
+                    StateName = state.Name,
+                    CreatedAt = createdAt,
+                    Reason = state.Reason,
+                    Data = serializedStateData
                 };
 
-                Data.Create(stateDto);
+                job.History.Add(stateHistory);
             });
         }
 
@@ -203,17 +221,28 @@ namespace Hangfire.MemoryStorage
                     return;
                 }
 
+                DateTime createdAt = DateTime.UtcNow;
+                Dictionary<string, string> serializedStateData = state.SerializeData();
+
                 var stateData = new StateDto
                 {
-                    Id = AutoIncrementIdGenerator.GenerateId(typeof (StateDto)),
+                    Id = AutoIncrementIdGenerator.GenerateId(typeof(StateDto)),
                     JobId = jobId,
                     Name = state.Name,
                     Reason = state.Reason,
-                    CreatedAt = DateTime.UtcNow,
-                    Data = JobHelper.ToJson(state.SerializeData())
+                    CreatedAt = createdAt,
+                    Data = JobHelper.ToJson(serializedStateData)
                 };
 
-                Data.Create(stateData);
+                var stateHistory = new StateHistoryDto
+                {
+                    StateName = state.Name,
+                    CreatedAt = createdAt,
+                    Reason = state.Reason,
+                    Data = serializedStateData
+                };
+
+                job.History.Add(stateHistory);
 
                 job.State = stateData;
             });
