@@ -133,27 +133,14 @@ namespace Hangfire.MemoryStorage
                 return null;
             }
 
-            var jobParameters = Data.GetEnumeration<JobParameterDto>()
-                .Where(p => p.JobId == jobId)
-                .ToDictionary(p => p.Name, p => p.Value);
-
-            var state =
-                Data.GetEnumeration<StateDto>().Where(s => s.JobId == jobId).ToList().Select(x => new StateHistoryDto
-                {
-                    StateName = x.Name,
-                    CreatedAt = x.CreatedAt,
-                    Reason = x.Reason,
-                    Data = new Dictionary<string, string>(
-                        JobHelper.FromJson<Dictionary<string, string>>(x.Data),
-                        StringComparer.OrdinalIgnoreCase)
-                }).ToList();
+            var jobParameters = job.Parameters.ToDictionary(p => p.Name, p => p.Value);
 
             return new JobDetailsDto
             {
                 CreatedAt = job.CreatedAt,
                 ExpireAt = job.ExpireAt,
                 Job = DeserializeJob(job.InvocationData, job.Arguments),
-                History = state,
+                History = job.History,
                 Properties = jobParameters
             };
         }

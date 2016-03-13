@@ -2,7 +2,7 @@
 
 namespace Hangfire.MemoryStorage.Dto
 {
-    public class SetDto : IExpirable, IKeyValued, IIntIdentifiedData
+    public class SetDto : IExpirable, IKeyValued, IIdentifiedData<int>
     {
         public long Score { get; set; }
         public DateTime? ExpireAt { get; set; }

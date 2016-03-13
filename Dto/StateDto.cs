@@ -2,7 +2,7 @@
 
 namespace Hangfire.MemoryStorage.Dto
 {
-    public class StateDto : IIntIdentifiedData
+    public class StateDto
     {
         public string JobId { get; set; }
         public string Name { get; set; }

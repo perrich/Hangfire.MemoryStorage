@@ -7,6 +7,7 @@ using Hangfire.MemoryStorage.Dto;
 using Hangfire.MemoryStorage.Utilities;
 using Hangfire.Storage;
 using IHangfireState = Hangfire.States.IState;
+using Hangfire.Storage.Monitoring;
 
 namespace Hangfire.MemoryStorage
 {
@@ -21,15 +22,34 @@ namespace Hangfire.MemoryStorage
         {
             QueueCommand(() =>
             {
-                Data.Create<StateDto>(new StateDto
+                var job = Data.Get<JobDto>(jobId);
+                if (job == null)
                 {
-                    Id = AutoIncrementIdGenerator.GenerateId(typeof (StateDto)),
+                    return;
+                }
+
+                DateTime createdAt = DateTime.UtcNow;
+                Dictionary<string, string> serializedStateData = state.SerializeData();
+
+                var stateData = new StateDto
+                {
+                    Id = AutoIncrementIdGenerator.GenerateId(typeof(StateDto)),
                     JobId = jobId,
                     Name = state.Name,
                     Reason = state.Reason,
-                    CreatedAt = DateTime.UtcNow,
-                    Data = JobHelper.ToJson(state.SerializeData())
-                });
+                    CreatedAt = createdAt,
+                    Data = JobHelper.ToJson(serializedStateData)
+                };
+                
+                var stateHistory = new StateHistoryDto
+                {
+                    StateName = state.Name,
+                    CreatedAt = createdAt,
+                    Reason = state.Reason,
+                    Data = serializedStateData
+                };
+
+                job.History.Add(stateHistory);
             });
         }
 
@@ -37,13 +57,15 @@ namespace Hangfire.MemoryStorage
         {
             QueueCommand(() =>
             {
-                Data.Create<JobQueueDto>(new JobQueueDto
+                var jobQueue = new JobQueueDto
                 {
                     Id = AutoIncrementIdGenerator.GenerateId(typeof (JobQueueDto)),
                     Queue = queue,
                     AddedAt = DateTime.UtcNow,
                     JobId = jobId
-                });
+                };
+
+                Data.Create(jobQueue);
             });
         }
 
@@ -59,12 +81,14 @@ namespace Hangfire.MemoryStorage
                 var set = Data.GetEnumeration<SetDto>().SingleOrDefault(s => s.Key == key && s.Value == value);
                 if (set == null)
                 {
-                    set = Data.Create<SetDto>(new SetDto
+                    set = new SetDto
                     {
                         Id = AutoIncrementIdGenerator.GenerateId(typeof (SetDto)),
                         Key = key,
                         Value = value
-                    });
+                    };
+
+                    Data.Create(set);
                 }
 
                 set.Score = (long) score;
@@ -126,12 +150,14 @@ namespace Hangfire.MemoryStorage
         {
             QueueCommand(() =>
             {
-                Data.Create<ListDto>(new ListDto
+                var list = new ListDto
                 {
                     Id = AutoIncrementIdGenerator.GenerateId(typeof (ListDto)),
                     Key = key,
                     Value = value
-                });
+                };
+
+                Data.Create(list);
             });
         }
 
@@ -154,7 +180,7 @@ namespace Hangfire.MemoryStorage
                 var list = Data.GetEnumeration<ListDto>().SingleOrDefault(j => j.Key == key && j.Value == value);
                 if (list != null)
                 {
-                    Data.Delete(typeof (ListDto), list);
+                    Data.Delete(list);
                 }
             });
         }
@@ -166,7 +192,7 @@ namespace Hangfire.MemoryStorage
                 var set = Data.GetEnumeration<SetDto>().SingleOrDefault(j => j.Key == key && j.Value == value);
                 if (set != null)
                 {
-                    Data.Delete(typeof (SetDto), set);
+                    Data.Delete(set);
                 }
             });
         }
@@ -180,7 +206,7 @@ namespace Hangfire.MemoryStorage
                 var hash = Data.GetEnumeration<HashDto>().Where(j => j.Key == key).ToList();
                 if (hash.Any())
                 {
-                    Data.Delete(typeof (HashDto), hash);
+                    Data.Delete(hash);
                 }
             });
         }
@@ -195,15 +221,28 @@ namespace Hangfire.MemoryStorage
                     return;
                 }
 
-                var stateData = Data.Create<StateDto>(new StateDto
+                DateTime createdAt = DateTime.UtcNow;
+                Dictionary<string, string> serializedStateData = state.SerializeData();
+
+                var stateData = new StateDto
                 {
-                    Id = AutoIncrementIdGenerator.GenerateId(typeof (StateDto)),
+                    Id = AutoIncrementIdGenerator.GenerateId(typeof(StateDto)),
                     JobId = jobId,
                     Name = state.Name,
                     Reason = state.Reason,
-                    CreatedAt = DateTime.UtcNow,
-                    Data = JobHelper.ToJson(state.SerializeData())
-                });
+                    CreatedAt = createdAt,
+                    Data = JobHelper.ToJson(serializedStateData)
+                };
+
+                var stateHistory = new StateHistoryDto
+                {
+                    StateName = state.Name,
+                    CreatedAt = createdAt,
+                    Reason = state.Reason,
+                    Data = serializedStateData
+                };
+
+                job.History.Add(stateHistory);
 
                 job.State = stateData;
             });
@@ -222,12 +261,14 @@ namespace Hangfire.MemoryStorage
                     var hash = Data.GetEnumeration<HashDto>().SingleOrDefault(h => h.Key == key && h.Field == local.Key);
                     if (hash == null)
                     {
-                        hash = Data.Create<HashDto>(new HashDto
+                        hash = new HashDto
                         {
                             Id = AutoIncrementIdGenerator.GenerateId(typeof (HashDto)),
                             Key = key,
                             Field = local.Key
-                        });
+                        };
+
+                        Data.Create(hash);
                     }
 
                     hash.Value = local.Value;

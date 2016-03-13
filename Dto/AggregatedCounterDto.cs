@@ -2,7 +2,7 @@
 
 namespace Hangfire.MemoryStorage.Dto
 {
-    public class AggregatedCounterDto : IExpirable, IIntIdentifiedData
+    public class AggregatedCounterDto : IExpirable, IIdentifiedData<int>
     {
         public string Key { get; set; }
         public long Value { get; set; }

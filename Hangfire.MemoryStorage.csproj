@@ -52,6 +52,7 @@
   <ItemGroup>
     <Compile Include="Database\AutoIncrementIdGenerator.cs" />
     <Compile Include="Database\Data.cs" />
+    <Compile Include="Dto\IIdentifiedData.cs" />
     <Compile Include="Dto\IKeyValued.cs" />
     <Compile Include="GlobalConfigurationExtensions.cs" />
     <Compile Include="MemoryStorageConnection.cs" />

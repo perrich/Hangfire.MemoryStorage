@@ -34,12 +34,14 @@ namespace Hangfire.MemoryStorage.Utilities
             }
             else
             {
-                counter = Data.Create<CounterDto>(new CounterDto
+                counter = new CounterDto
                 {
-                    Id = AutoIncrementIdGenerator.GenerateId(typeof (ListDto)),
+                    Id = AutoIncrementIdGenerator.GenerateId(typeof(ListDto)),
                     Key = key,
                     Value = (decrement ? 0 : 1)
-                });
+                };
+
+                Data.Create(counter);
             }
             return counter;
         }
