@@ -130,6 +130,18 @@ namespace Hangfire.MemoryStorage
             });
         }
 
+        public override void ExpireHash(string key, TimeSpan expireIn)
+        {
+            QueueCommand(() =>
+            {
+                var hash = Data.GetEnumeration<HashDto>().Where(s => s.Key == key);
+                foreach (var hashitem in hash)
+                {
+                    hashitem.ExpireAt = DateTime.UtcNow.Add(expireIn);
+                }
+            });
+        }
+
         public override void IncrementCounter(string key)
         {
             QueueCommand(() => { CounterUtilities.IncrementCounter(key, false); });
