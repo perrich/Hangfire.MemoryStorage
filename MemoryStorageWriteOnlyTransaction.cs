@@ -118,6 +118,18 @@ namespace Hangfire.MemoryStorage
             });
         }
 
+        public override void ExpireSet(string key, TimeSpan expireIn)
+        {
+            QueueCommand(() =>
+            {
+                var setitems = Data.GetEnumeration<SetDto>().Where(s => s.Key == key);
+                foreach (var setitem in setitems)
+                {
+                    setitem.ExpireAt = DateTime.UtcNow.Add(expireIn);
+                }
+            });
+        }
+
         public override void IncrementCounter(string key)
         {
             QueueCommand(() => { CounterUtilities.IncrementCounter(key, false); });
@@ -211,6 +223,20 @@ namespace Hangfire.MemoryStorage
             });
         }
 
+        public override void RemoveSet(string key)
+        {
+            Guard.ArgumentNotNull(key, "key");
+
+            QueueCommand(() =>
+            {
+                var set = Data.GetEnumeration<SetDto>().Where(j => j.Key == key).ToList();
+                if (set.Any())
+                {
+                    Data.Delete(set);
+                }
+            });
+        }
+
         public override void SetJobState(string jobId, IHangfireState state)
         {
             QueueCommand(() =>
@@ -291,6 +317,16 @@ namespace Hangfire.MemoryStorage
         }
 
         public override void PersistSet(string key)
+        {
+            // noop
+        }
+
+        public override void PersistHash(string key)
+        {
+            // noop
+        }
+
+        public override void PersistList(string key)
         {
             // noop
         }
