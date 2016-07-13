@@ -142,6 +142,18 @@ namespace Hangfire.MemoryStorage
             });
         }
 
+        public override void ExpireList(string key, TimeSpan expireIn)
+        {
+            QueueCommand(() =>
+            {
+                var list = Data.GetEnumeration<ListDto>().Where(s => s.Key == key);
+                foreach (var listitem in list)
+                {
+                    listitem.ExpireAt = DateTime.UtcNow.Add(expireIn);
+                }
+            });
+        }
+
         public override void IncrementCounter(string key)
         {
             QueueCommand(() => { CounterUtilities.IncrementCounter(key, false); });
