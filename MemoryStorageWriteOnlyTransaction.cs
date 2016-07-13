@@ -14,11 +14,11 @@ namespace Hangfire.MemoryStorage
     /// <summary>
     ///     Fake transaction in memory (command are delayed and done when needed)
     /// </summary>
-    public class MemoryStorageWriteOnlyTransaction : IWriteOnlyTransaction
+    public class MemoryStorageWriteOnlyTransaction : JobStorageTransaction, IWriteOnlyTransaction
     {
         private IList<Action> commandsList = new List<Action>();
 
-        public void AddJobState(string jobId, IHangfireState state)
+        public override void AddJobState(string jobId, IHangfireState state)
         {
             QueueCommand(() =>
             {
@@ -40,7 +40,7 @@ namespace Hangfire.MemoryStorage
                     CreatedAt = createdAt,
                     Data = JobHelper.ToJson(serializedStateData)
                 };
-                
+
                 var stateHistory = new StateHistoryDto
                 {
                     StateName = state.Name,
@@ -53,13 +53,13 @@ namespace Hangfire.MemoryStorage
             });
         }
 
-        public void AddToQueue(string queue, string jobId)
+        public override void AddToQueue(string queue, string jobId)
         {
             QueueCommand(() =>
             {
                 var jobQueue = new JobQueueDto
                 {
-                    Id = AutoIncrementIdGenerator.GenerateId(typeof (JobQueueDto)),
+                    Id = AutoIncrementIdGenerator.GenerateId(typeof(JobQueueDto)),
                     Queue = queue,
                     AddedAt = DateTime.UtcNow,
                     JobId = jobId
@@ -69,12 +69,12 @@ namespace Hangfire.MemoryStorage
             });
         }
 
-        public void AddToSet(string key, string value)
+        public override void AddToSet(string key, string value)
         {
             AddToSet(key, value, 0.0);
         }
 
-        public void AddToSet(string key, string value, double score)
+        public override void AddToSet(string key, string value, double score)
         {
             QueueCommand(() =>
             {
@@ -83,7 +83,7 @@ namespace Hangfire.MemoryStorage
                 {
                     set = new SetDto
                     {
-                        Id = AutoIncrementIdGenerator.GenerateId(typeof (SetDto)),
+                        Id = AutoIncrementIdGenerator.GenerateId(typeof(SetDto)),
                         Key = key,
                         Value = value
                     };
@@ -95,7 +95,7 @@ namespace Hangfire.MemoryStorage
             });
         }
 
-        public void Commit()
+        public override void Commit()
         {
             var commands = commandsList;
             commandsList = new List<Action>();
@@ -106,7 +106,7 @@ namespace Hangfire.MemoryStorage
             }
         }
 
-        public void ExpireJob(string jobId, TimeSpan expireIn)
+        public override void ExpireJob(string jobId, TimeSpan expireIn)
         {
             QueueCommand(() =>
             {
@@ -118,12 +118,12 @@ namespace Hangfire.MemoryStorage
             });
         }
 
-        public void IncrementCounter(string key)
+        public override void IncrementCounter(string key)
         {
             QueueCommand(() => { CounterUtilities.IncrementCounter(key, false); });
         }
 
-        public void IncrementCounter(string key, TimeSpan expireIn)
+        public override void IncrementCounter(string key, TimeSpan expireIn)
         {
             QueueCommand(() =>
             {
@@ -132,12 +132,12 @@ namespace Hangfire.MemoryStorage
             });
         }
 
-        public void DecrementCounter(string key)
+        public override void DecrementCounter(string key)
         {
             QueueCommand(() => { CounterUtilities.IncrementCounter(key, true); });
         }
 
-        public void DecrementCounter(string key, TimeSpan expireIn)
+        public override void DecrementCounter(string key, TimeSpan expireIn)
         {
             QueueCommand(() =>
             {
@@ -146,13 +146,13 @@ namespace Hangfire.MemoryStorage
             });
         }
 
-        public void InsertToList(string key, string value)
+        public override void InsertToList(string key, string value)
         {
             QueueCommand(() =>
             {
                 var list = new ListDto
                 {
-                    Id = AutoIncrementIdGenerator.GenerateId(typeof (ListDto)),
+                    Id = AutoIncrementIdGenerator.GenerateId(typeof(ListDto)),
                     Key = key,
                     Value = value
                 };
@@ -161,7 +161,7 @@ namespace Hangfire.MemoryStorage
             });
         }
 
-        public void PersistJob(string jobId)
+        public override void PersistJob(string jobId)
         {
             QueueCommand(() =>
             {
@@ -173,7 +173,7 @@ namespace Hangfire.MemoryStorage
             });
         }
 
-        public void RemoveFromList(string key, string value)
+        public override void RemoveFromList(string key, string value)
         {
             QueueCommand(() =>
             {
@@ -185,7 +185,7 @@ namespace Hangfire.MemoryStorage
             });
         }
 
-        public void RemoveFromSet(string key, string value)
+        public override void RemoveFromSet(string key, string value)
         {
             QueueCommand(() =>
             {
@@ -197,7 +197,7 @@ namespace Hangfire.MemoryStorage
             });
         }
 
-        public void RemoveHash(string key)
+        public override void RemoveHash(string key)
         {
             Guard.ArgumentNotNull(key, "key");
 
@@ -211,7 +211,7 @@ namespace Hangfire.MemoryStorage
             });
         }
 
-        public void SetJobState(string jobId, IHangfireState state)
+        public override void SetJobState(string jobId, IHangfireState state)
         {
             QueueCommand(() =>
             {
@@ -248,7 +248,7 @@ namespace Hangfire.MemoryStorage
             });
         }
 
-        public void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs)
+        public override void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs)
         {
             Guard.ArgumentNotNull(key, "key");
             Guard.ArgumentNotNull(keyValuePairs, "keyValuePairs");
@@ -263,7 +263,7 @@ namespace Hangfire.MemoryStorage
                     {
                         hash = new HashDto
                         {
-                            Id = AutoIncrementIdGenerator.GenerateId(typeof (HashDto)),
+                            Id = AutoIncrementIdGenerator.GenerateId(typeof(HashDto)),
                             Key = key,
                             Field = local.Key
                         };
@@ -276,17 +276,32 @@ namespace Hangfire.MemoryStorage
             }
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
+            base.Dispose();
         }
 
-        public void TrimList(string key, int keepStartingFrom, int keepEndingAt)
+        public override void TrimList(string key, int keepStartingFrom, int keepEndingAt)
         {
         }
 
         private void QueueCommand(Action command)
         {
             commandsList.Add(command);
+        }
+
+        public override void PersistSet(string key)
+        {
+            // noop
+        }
+
+        public override void AddRangeToSet(string key, IList<string> items)
+        {
+            this.QueueCommand(() =>
+            {
+                var set = new SetDto();
+                Data.Create(set);
+            });
         }
     }
 }
