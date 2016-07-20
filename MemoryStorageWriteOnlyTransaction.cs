@@ -71,7 +71,7 @@ namespace Hangfire.MemoryStorage
 
         public override void AddToSet(string key, string value)
         {
-            AddToSet(key, value, 0.0);
+            this.AddToSet(key, value, 0.0);
         }
 
         public override void AddToSet(string key, string value, double score)
@@ -342,25 +342,56 @@ namespace Hangfire.MemoryStorage
 
         public override void PersistSet(string key)
         {
-            // noop
+            QueueCommand(() =>
+            {
+                var set = Data.GetEnumeration<SetDto>().Where(s => s.Key == key);
+                foreach (var item in set)
+                {
+                    item.ExpireAt = null;
+                }
+            });
         }
 
         public override void PersistHash(string key)
         {
-            // noop
+            QueueCommand(() =>
+            {
+                var hash = Data.GetEnumeration<HashDto>().Where(s => s.Key == key);
+                foreach (var item in hash)
+                {
+                    item.ExpireAt = null;
+                }
+            });
         }
 
         public override void PersistList(string key)
         {
-            // noop
+            QueueCommand(() =>
+            {
+                var list = Data.GetEnumeration<ListDto>().Where(s => s.Key == key);
+                foreach (var item in list)
+                {
+                    item.ExpireAt = null;
+                }
+            });
         }
 
         public override void AddRangeToSet(string key, IList<string> items)
         {
             this.QueueCommand(() =>
             {
-                var set = new SetDto();
-                Data.Create(set);
+
+                var existingSet = Data.GetEnumeration<SetDto>().Where(s => s.Key == key).Select(s => s.Value).ToList();
+                foreach (var item in items.Where(i => !existingSet.Contains(i)))
+                {
+                    var newSet = new SetDto
+                    {
+                        Id = AutoIncrementIdGenerator.GenerateId(typeof(SetDto)),
+                        Key = key,
+                        Value = item
+                    };
+                    Data.Create(newSet);
+                }
             });
         }
     }
