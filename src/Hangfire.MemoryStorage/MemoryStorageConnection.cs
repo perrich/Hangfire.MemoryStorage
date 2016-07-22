@@ -21,6 +21,8 @@ namespace Hangfire.MemoryStorage
             _fetchNextJobTimeout = fetchNextJobTimeout;
         }
 
+        internal static readonly AutoResetEvent NewItemInQueueEvent = new AutoResetEvent(true);
+
         public override IDisposable AcquireDistributedLock(string resource, TimeSpan timeout)
         {
             return LocalLock.AcquireLock(resource, timeout);
@@ -84,7 +86,7 @@ namespace Hangfire.MemoryStorage
 
         public override IWriteOnlyTransaction CreateWriteTransaction()
         {
-            return new MemoryStorageWriteOnlyTransaction();
+            return new MemoryStorageWriteOnlyTransaction(NewItemInQueueEvent);
         }
 
         public override IFetchedJob FetchNextJob(string[] queues, CancellationToken cancellationToken)
@@ -115,7 +117,7 @@ namespace Hangfire.MemoryStorage
                     }
                 }
 
-                cancellationToken.WaitHandle.WaitOne(TimeSpan.FromSeconds(15));
+                WaitHandle.WaitAny(new[] { cancellationToken.WaitHandle, NewItemInQueueEvent }, TimeSpan.FromSeconds(15));
                 cancellationToken.ThrowIfCancellationRequested();
             }
 
