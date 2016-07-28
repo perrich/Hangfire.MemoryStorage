@@ -5,6 +5,7 @@ using Hangfire.MemoryStorage.Database;
 using Hangfire.MemoryStorage.Dto;
 using Hangfire.Server;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace Hangfire.MemoryStorage
 {
@@ -33,16 +34,16 @@ namespace Hangfire.MemoryStorage
         {
             var now = DateTime.UtcNow;
 
-            foreach (var t in Types)
+            foreach (var t in Types.Select(t => t.GetTypeInfo()))
             {
-                if (!typeof(IExpirable).IsAssignableFrom(t))
+                if (!typeof(IExpirable).GetTypeInfo().IsAssignableFrom(t))
                     continue;
 
                 int removedCount;
 
                 do
                 {
-                    var table = Data.GetEnumeration(t);
+                    var table = Data.GetEnumeration(t.AsType());
                     var data = (from d in table
                         where ((IExpirable)d).ExpireAt < now
                         select d).Take(NumberOfRecordsInSinglePass).ToList();
@@ -54,11 +55,11 @@ namespace Hangfire.MemoryStorage
                         continue;
                     }
 
-                    if (typeof(IIdentifiedData<int>).IsAssignableFrom(t))
+                    if (typeof(IIdentifiedData<int>).GetTypeInfo().IsAssignableFrom(t))
                     {
                         Data.Delete(data.Cast<IIdentifiedData<int>>());
                     }
-                    else if (typeof(IIdentifiedData<string>).IsAssignableFrom(t))
+                    else if (typeof(IIdentifiedData<string>).GetTypeInfo().IsAssignableFrom(t))
                     {
                         Data.Delete(data.Cast<IIdentifiedData<string>>());
                     }
