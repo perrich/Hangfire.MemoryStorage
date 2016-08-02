@@ -1,0 +1,26 @@
+﻿{
+  "version": "1.4.0",
+  "title": "Hangfire.MemoryStorage",
+  "description": "A memory storage for Hangfire",
+  "copyright": "Copyright 2015-2016",
+  "authors": [ "PERRICHOT Florian" ],
+  "packOptions": {
+    "owners": [ "PERRICHOT Florian" ],
+    "tags": [ "Hangfire", "Storage" ],
+    "licenseUrl": "http://www.apache.org/licenses/LICENSE-2.0",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/perrich/Hangfire.MemoryStorage"
+    }
+  },
+
+  "dependencies": {
+    "NETStandard.Library": "1.6.0",
+    "Hangfire.Core": "1.6.1"
+  },
+
+  "frameworks": {
+    "net45": {},
+    "netstandard1.3": {}
+  }
+}
