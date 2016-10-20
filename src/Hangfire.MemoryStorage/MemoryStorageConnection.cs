@@ -14,6 +14,12 @@ namespace Hangfire.MemoryStorage
     public class MemoryStorageConnection : JobStorageConnection
     {
         private static readonly object FetchJobsLock = new object();
+        private readonly TimeSpan _fetchNextJobTimeout;
+
+        public MemoryStorageConnection(TimeSpan fetchNextJobTimeout)
+        {
+            _fetchNextJobTimeout = fetchNextJobTimeout;
+        }
 
         public override IDisposable AcquireDistributedLock(string resource, TimeSpan timeout)
         {
@@ -90,7 +96,7 @@ namespace Hangfire.MemoryStorage
 
             while (true)
             {
-                var timeout = DateTime.UtcNow.Add(TimeSpan.FromMinutes(30).Negate());
+                var timeout = DateTime.UtcNow.Add(_fetchNextJobTimeout.Negate());
 
                 lock (FetchJobsLock)
                 {

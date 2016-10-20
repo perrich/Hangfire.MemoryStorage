@@ -19,7 +19,7 @@ namespace Hangfire.MemoryStorage
 
         public override IStorageConnection GetConnection()
         {
-            return new MemoryStorageConnection();
+            return new MemoryStorageConnection(_options.FetchNextJobTimeout);
         }
 
         public override IMonitoringApi GetMonitoringApi()
