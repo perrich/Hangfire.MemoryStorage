@@ -1,3 +1,4 @@
+using Hangfire.MemoryStorage.Utilities;
 ﻿using Hangfire.Storage.Monitoring;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ namespace Hangfire.MemoryStorage.Dto
     {
         public JobDto()
         {
-            History = new List<StateHistoryDto>();
+            History = new StateHistoryList();
             Parameters = new List<JobParameterDto>();
         }
 
