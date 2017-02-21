@@ -9,7 +9,7 @@ Please note that it should not be used in production (no integrity and no thread
 
 License:
 ---
-Copyright 2015 - 2016 PERRICHOT Florian
+Copyright 2015 - 2017 PERRICHOT Florian
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
