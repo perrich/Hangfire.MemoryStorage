@@ -7,6 +7,7 @@
     <authors>PERRICHOT Florian</authors>
     <owners>PERRICHOT Florian</owners>
     <licenseUrl>http://www.apache.org/licenses/LICENSE-2.0</licenseUrl>
+	<projectUrl>https://github.com/perrich/Hangfire.MemoryStorage</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>A memory storage for Hangfire</description>
     <releaseNotes>Second release.</releaseNotes>
