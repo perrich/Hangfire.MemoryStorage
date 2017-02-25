@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Hangfire.Common;
 using Hangfire.MemoryStorage.Database;
 using Hangfire.MemoryStorage.Dto;
@@ -17,6 +18,13 @@ namespace Hangfire.MemoryStorage
     public class MemoryStorageWriteOnlyTransaction : JobStorageTransaction, IWriteOnlyTransaction
     {
         private IList<Action> commandsList = new List<Action>();
+
+        private readonly AutoResetEvent CommitTriggerEvent;
+
+        public MemoryStorageWriteOnlyTransaction(AutoResetEvent commitTriggerEvent)
+        {
+            this.CommitTriggerEvent = commitTriggerEvent;
+        }
 
         public override void AddJobState(string jobId, IHangfireState state)
         {
@@ -104,6 +112,8 @@ namespace Hangfire.MemoryStorage
             {
                 cmd();
             }
+
+            this.CommitTriggerEvent.Set();
         }
 
         public override void ExpireJob(string jobId, TimeSpan expireIn)
