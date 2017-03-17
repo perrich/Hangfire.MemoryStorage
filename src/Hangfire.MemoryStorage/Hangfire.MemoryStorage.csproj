@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>A memory storage for Hangfire</Description>
+    <Copyright>Copyright 2015-2017</Copyright>
+    <AssemblyTitle>Hangfire.MemoryStorage</AssemblyTitle>
+    <VersionPrefix>1.5.0</VersionPrefix>
+    <Authors>PERRICHOT Florian</Authors>
+    <TargetFrameworks>net45;netstandard1.3</TargetFrameworks>
+    <AssemblyName>Hangfire.MemoryStorage</AssemblyName>
+    <PackageId>Hangfire.MemoryStorage</PackageId>
+    <PackageTags>Hangfire;Storage</PackageTags>
+    <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/perrich/Hangfire.MemoryStorage</RepositoryUrl>
+    <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Hangfire.Core" Version="1.6.1" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+</Project>

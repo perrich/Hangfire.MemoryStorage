@@ -1,15 +1,14 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.4
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Hangfire.MemoryStorage", "src\Hangfire.MemoryStorage\Hangfire.MemoryStorage.xproj", "{5F42DF92-7226-4C35-A515-88062683B6CE}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9450451F-1924-4B69-BDDA-AB26964935E6}"
 	ProjectSection(SolutionItems) = preProject
-		global.json = global.json
 		NuGet.Config = NuGet.Config
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.MemoryStorage", "src\Hangfire.MemoryStorage\Hangfire.MemoryStorage.csproj", "{5F42DF92-7226-4C35-A515-88062683B6CE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
