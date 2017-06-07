@@ -27,13 +27,12 @@ namespace Hangfire.MemoryStorage
             return new MemoryStorageMonitoringApi();
         }
 
+#pragma warning disable 618
         public override IEnumerable<IServerComponent> GetComponents()
+#pragma warning restore 618
         {
-            return new IServerComponent[]
-            {
-                new ExpirationManager(_options.JobExpirationCheckInterval),
-                new CountersAggregator(_options.CountersAggregateInterval)
-            };
+            yield return new ExpirationManager(_options.JobExpirationCheckInterval);
+            yield return new CountersAggregator(_options.CountersAggregateInterval);
         }
     }
 }

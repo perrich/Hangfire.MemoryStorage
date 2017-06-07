@@ -7,7 +7,9 @@ using Hangfire.Server;
 
 namespace Hangfire.MemoryStorage
 {
+#pragma warning disable 618
     public class CountersAggregator : IServerComponent
+#pragma warning restore 618
     {
         private const int NumberOfRecordsInSinglePass = 1000;
         private static readonly TimeSpan DelayBetweenPasses = TimeSpan.FromSeconds(1);
@@ -59,7 +61,7 @@ namespace Hangfire.MemoryStorage
                     }
                 }
 
-                removedCount = counters.Count();
+                removedCount = counters.Count;
 
                 Data.Delete(counters);
 

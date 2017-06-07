@@ -9,7 +9,9 @@ using System.Reflection;
 
 namespace Hangfire.MemoryStorage
 {
+#pragma warning disable 618
     public class ExpirationManager : IServerComponent
+#pragma warning restore 618
     {
         private const int NumberOfRecordsInSinglePass = 1000;
         private static readonly TimeSpan DelayBetweenPasses = TimeSpan.FromSeconds(1);

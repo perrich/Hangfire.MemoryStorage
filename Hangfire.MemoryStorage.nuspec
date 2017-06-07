@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>Hangfire.MemoryStorage</id>
-    <version>1.5.0.0</version>
+    <version>1.5.1.0</version>
     <title>Hangfire.MemoryStorage</title>
     <authors>PERRICHOT Florian</authors>
     <owners>PERRICHOT Florian</owners>
@@ -19,6 +19,6 @@
   </metadata>
   <files>
     <file src="src\Hangfire.MemoryStorage\bin\Release\net45\Hangfire.MemoryStorage.dll" target="lib\net40\Hangfire.MemoryStorage.dll" />
-    <file src="src\Hangfire.MemoryStorage\bin\Release\netstandard1.3\Hangfire.MemoryStorage.dll" target="lib\netstandard1.4\Hangfire.MemoryStorage.dll" />
+    <file src="src\Hangfire.MemoryStorage\bin\Release\netstandard1.3\Hangfire.MemoryStorage.dll" target="lib\netstandard1.3\Hangfire.MemoryStorage.dll" />
   </files>
 </package>
