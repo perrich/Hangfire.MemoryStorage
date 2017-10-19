@@ -13,7 +13,11 @@ namespace Hangfire.MemoryStorage.Utilities
         {
             _lock = Locks.GetOrAdd(resource, new object());
 
-            Monitor.TryEnter(_lock, timeout);
+            bool hasEntered = Monitor.TryEnter(_lock, timeout);
+            if (!hasEntered)
+            {
+                throw new SynchronizationLockException();
+            }
         }
 
         public void Dispose()
