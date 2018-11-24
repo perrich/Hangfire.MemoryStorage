@@ -3,8 +3,10 @@ Hangfire.MemoryStorage
 
 A memory storage for Hangfire (http://hangfire.io).
 
-It can be useful for testing purpose like check the behaviour and use it in a development environment. 
-Please note that it should not be used in production (no integrity and no thread safe even if many cases are managed).
+It can be useful for testing purpose like check the behaviour and use it in a development environment.
+Please note that :
+* it should not be used in production (no integrity and no thread safe even if many cases are managed).
+* data are stored in memory using a single static dictionary 
 
 
 License:
