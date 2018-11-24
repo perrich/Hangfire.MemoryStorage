@@ -24,3 +24,46 @@ Copyright 2015 - 2017 PERRICHOT Florian
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
+
+#### How To use MemoryStorage ####
+
+GlobalConfiguration.Configuration.UseMemoryStorage();
+
+Example: Set a job now and execute.
+
+Startup Class
+
+```csharp
+
+public void ConfigureServices(IServiceCollection services)
+{   // Add This
+    services.AddHangfire(config =>
+    {
+        config.UseMemoryStorage();
+    });
+}
+
+ public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+{   
+    // Add This
+    app.UseHangfireDashboard();
+    app.UseHangfireServer();
+}
+
+```
+
+```csharp
+static void Main(string[] args)
+{
+        
+   BackgroundJob.Enqueue(() => System.IO.File.WriteAllText(@"..\test.txt","1"));
+}
+```
+
+
+OutPut:
+
+test.txt <br />
+1
+
+
