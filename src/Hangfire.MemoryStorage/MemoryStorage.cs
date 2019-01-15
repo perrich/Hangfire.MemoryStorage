@@ -8,7 +8,8 @@ namespace Hangfire.MemoryStorage
     public class MemoryStorage : JobStorage
     {
         private readonly MemoryStorageOptions _options;
-        private readonly Data _data;
+
+        public Data Data { get; }
 
         public MemoryStorage() : this(new MemoryStorageOptions(), new Data())
         {
@@ -21,25 +22,25 @@ namespace Hangfire.MemoryStorage
         public MemoryStorage(MemoryStorageOptions options, Data data)
         {
             _options = options;
-            _data = data;
+            Data = data;
         }
 
         public override IStorageConnection GetConnection()
         {
-            return new MemoryStorageConnection(_data, _options.FetchNextJobTimeout);
+            return new MemoryStorageConnection(Data, _options.FetchNextJobTimeout);
         }
 
         public override IMonitoringApi GetMonitoringApi()
         {
-            return new MemoryStorageMonitoringApi(_data);
+            return new MemoryStorageMonitoringApi(Data);
         }
 
 #pragma warning disable 618
         public override IEnumerable<IServerComponent> GetComponents()
 #pragma warning restore 618
         {
-            yield return new ExpirationManager(_data, _options.JobExpirationCheckInterval);
-            yield return new CountersAggregator(_data, _options.CountersAggregateInterval);
+            yield return new ExpirationManager(Data, _options.JobExpirationCheckInterval);
+            yield return new CountersAggregator(Data, _options.CountersAggregateInterval);
         }
     }
 }
