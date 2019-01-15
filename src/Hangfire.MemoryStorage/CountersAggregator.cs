@@ -14,10 +14,12 @@ namespace Hangfire.MemoryStorage
         private const int NumberOfRecordsInSinglePass = 1000;
         private static readonly TimeSpan DelayBetweenPasses = TimeSpan.FromSeconds(1);
         private readonly TimeSpan _aggregateInterval;
+        private readonly Data _data;
 
-        public CountersAggregator(TimeSpan aggregateInterval)
+        public CountersAggregator(Data data, TimeSpan aggregateInterval)
         {
             _aggregateInterval = aggregateInterval;
+            _data = data;
         }
 
         public void Execute(CancellationToken cancellationToken)
@@ -26,7 +28,7 @@ namespace Hangfire.MemoryStorage
 
             do
             {
-                var counters = Data.GetEnumeration<CounterDto>().Take(NumberOfRecordsInSinglePass).ToList();
+                var counters = _data.GetEnumeration<CounterDto>().Take(NumberOfRecordsInSinglePass).ToList();
 
                 var groupedCounters = counters.GroupBy(c => c.Key).Select(g => new
                 {
@@ -37,7 +39,7 @@ namespace Hangfire.MemoryStorage
 
                 foreach (var counter in groupedCounters)
                 {
-                    var aggregate = Data.GetEnumeration<AggregatedCounterDto>()
+                    var aggregate = _data.GetEnumeration<AggregatedCounterDto>()
                         .FirstOrDefault(a => a.Key == counter.Key);
 
                     if (aggregate == null)
@@ -50,7 +52,7 @@ namespace Hangfire.MemoryStorage
                             ExpireAt = DateTime.MinValue
                         };
 
-                        Data.Create(aggregate);
+                        _data.Create(aggregate);
                     }
 
                     aggregate.Value += counter.Value;
@@ -63,7 +65,7 @@ namespace Hangfire.MemoryStorage
 
                 removedCount = counters.Count;
 
-                Data.Delete(counters);
+                _data.Delete(counters);
 
                 if (removedCount > 0)
                 {

@@ -7,12 +7,12 @@ namespace Hangfire.MemoryStorage.Utilities
 {
     public static class CounterUtilities
     {
-        public static long GetCombinedCounter(string key)
+        public static long GetCombinedCounter(Data data, string key)
         {
             var counters =
-                Data.GetEnumeration<CounterDto>().Where(c => c.Key == key).Select(c => c.Value).DefaultIfEmpty(0).Sum();
+                data.GetEnumeration<CounterDto>().Where(c => c.Key == key).Select(c => c.Value).DefaultIfEmpty(0).Sum();
             var aggregatedCounters =
-                Data.GetEnumeration<AggregatedCounterDto>()
+                data.GetEnumeration<AggregatedCounterDto>()
                     .Where(c => c.Key == key)
                     .Select(c => c.Value)
                     .DefaultIfEmpty(0)
@@ -21,10 +21,10 @@ namespace Hangfire.MemoryStorage.Utilities
             return counters + aggregatedCounters;
         }
 
-        public static CounterDto IncrementCounter(string key, bool decrement)
+        public static CounterDto IncrementCounter(Data data, string key, bool decrement)
         {
             var counter =
-                Data.GetEnumeration<CounterDto>()
+                data.GetEnumeration<CounterDto>()
                     .Where(c => c.Key == key)
                     .OrderByDescending(c => c.Value)
                     .FirstOrDefault();
@@ -41,7 +41,7 @@ namespace Hangfire.MemoryStorage.Utilities
                     Value = (decrement ? 0 : 1)
                 };
 
-                Data.Create(counter);
+                data.Create(counter);
             }
             return counter;
         }

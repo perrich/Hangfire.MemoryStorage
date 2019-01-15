@@ -15,6 +15,13 @@ namespace Hangfire.MemoryStorage
 {
     public class MemoryStorageMonitoringApi : IMonitoringApi
     {
+        private readonly Data _data;
+
+        public MemoryStorageMonitoringApi(Data data)
+        {
+            _data = data;
+        }
+
         public JobList<DeletedJobDto> DeletedJobs(int from, int count)
         {
             return GetJobs(
@@ -35,12 +42,12 @@ namespace Hangfire.MemoryStorage
 
         public long EnqueuedCount(string queue)
         {
-            return Data.GetEnumeration<JobQueueDto>().Count(q => q.Queue == queue && !q.FetchedAt.HasValue);
+            return _data.GetEnumeration<JobQueueDto>().Count(q => q.Queue == queue && !q.FetchedAt.HasValue);
         }
 
         public JobList<EnqueuedJobDto> EnqueuedJobs(string queue, int from, int perPage)
         {
-            var enqueuedJobIds = QueueApi.GetEnqueuedJobIds(queue, from, perPage, false);
+            var enqueuedJobIds = QueueApi.GetEnqueuedJobIds(_data, queue, from, perPage, false);
 
             return EnqueuedJobs(enqueuedJobIds);
         }
@@ -72,12 +79,12 @@ namespace Hangfire.MemoryStorage
 
         public long FetchedCount(string queue)
         {
-            return Data.GetEnumeration<JobQueueDto>().Count(q => q.Queue == queue && q.FetchedAt.HasValue);
+            return _data.GetEnumeration<JobQueueDto>().Count(q => q.Queue == queue && q.FetchedAt.HasValue);
         }
 
         public JobList<FetchedJobDto> FetchedJobs(string queue, int from, int perPage)
         {
-            var fetchedJobIds = QueueApi.GetEnqueuedJobIds(queue, from, perPage, true);
+            var fetchedJobIds = QueueApi.GetEnqueuedJobIds(_data, queue, from, perPage, true);
 
             return FetchedJobs(fetchedJobIds);
         }
@@ -85,18 +92,18 @@ namespace Hangfire.MemoryStorage
         public StatisticsDto GetStatistics()
         {
             var states =
-                Data.GetEnumeration<JobDto>()
+                _data.GetEnumeration<JobDto>()
                     .Where(j => j.StateName != null)
                     .GroupBy(j => j.StateName)
                     .ToDictionary(j => j.Key, j => j.Count());
 
             Func<string, int> getCountIfExists = name => states.ContainsKey(name) ? states[name] : 0;
 
-            var succeded = CounterUtilities.GetCombinedCounter("stats:succeeded");
-            var deleted = CounterUtilities.GetCombinedCounter("stats:deleted");
+            var succeded = CounterUtilities.GetCombinedCounter(_data, "stats:succeeded");
+            var deleted = CounterUtilities.GetCombinedCounter(_data, "stats:deleted");
 
-            var recurringJobs = Data.GetEnumeration<SetDto>().Count(c => c.Key == "recurring-jobs");
-            var servers = Data.GetEnumeration<Dto.ServerDto>().Count();
+            var recurringJobs = _data.GetEnumeration<SetDto>().Count(c => c.Key == "recurring-jobs");
+            var servers = _data.GetEnumeration<Dto.ServerDto>().Count();
 
             var stats = new StatisticsDto
             {
@@ -127,7 +134,7 @@ namespace Hangfire.MemoryStorage
         {
             Guard.ArgumentNotNull(jobId, "jobId");
 
-            var job = Data.Get<JobDto>(jobId);
+            var job = _data.Get<JobDto>(jobId);
             if (job == null)
             {
                 return null;
@@ -164,12 +171,12 @@ namespace Hangfire.MemoryStorage
 
         public IList<QueueWithTopEnqueuedJobsDto> Queues()
         {
-            var queuesData = Data.GetEnumeration<JobQueueDto>().ToList();
+            var queuesData = _data.GetEnumeration<JobQueueDto>().ToList();
             var queues = queuesData.GroupBy(q => q.Queue).ToDictionary(q => q.Key, q => q.Count());
 
             var query =
                 from kvp in queues
-                let enqueuedJobIds = QueueApi.GetEnqueuedJobIds(kvp.Key, 0, 5, false)
+                let enqueuedJobIds = QueueApi.GetEnqueuedJobIds(_data, kvp.Key, 0, 5, false)
                 let counters = QueueApi.GetEnqueuedAndFetchedCount(queuesData, kvp.Key)
                 select new QueueWithTopEnqueuedJobsDto
                 {
@@ -201,7 +208,7 @@ namespace Hangfire.MemoryStorage
 
         public IList<ServerDto> Servers()
         {
-            var servers = Data.GetEnumeration<Dto.ServerDto>();
+            var servers = _data.GetEnumeration<Dto.ServerDto>();
 
             var query =
                 from server in servers
@@ -244,7 +251,7 @@ namespace Hangfire.MemoryStorage
             return GetNumberOfJobsByStateName(SucceededState.StateName);
         }
 
-        private static Dictionary<DateTime, long> GetHourlyTimelineStats(string type)
+        private Dictionary<DateTime, long> GetHourlyTimelineStats(string type)
         {
             var endDate = DateTime.UtcNow;
             var dates = new List<DateTime>();
@@ -272,10 +279,10 @@ namespace Hangfire.MemoryStorage
             return GetTimelineStats(dates, x => string.Format("stats:{0}:{1}", type, x.ToString("yyyy-MM-dd")));
         }
 
-        private static Dictionary<DateTime, long> GetTimelineStats(List<DateTime> dates,
+        private Dictionary<DateTime, long> GetTimelineStats(List<DateTime> dates,
             Func<DateTime, string> formatorAction)
         {
-            var counters = Data.GetEnumeration<AggregatedCounterDto>();
+            var counters = _data.GetEnumeration<AggregatedCounterDto>();
             var keyMap = dates.ToDictionary(formatorAction, x => x);
 
             var valuesMap = (from c in counters
@@ -290,10 +297,10 @@ namespace Hangfire.MemoryStorage
             return keyMap.ToDictionary(k => k.Value, k => valuesMap[k.Key]);
         }
 
-        private static JobList<FetchedJobDto> FetchedJobs(IEnumerable<string> jobIds)
+        private JobList<FetchedJobDto> FetchedJobs(IEnumerable<string> jobIds)
         {
-            var jobs = Data.GetEnumeration<JobDto>();
-            var queues = Data.GetEnumeration<JobQueueDto>();
+            var jobs = _data.GetEnumeration<JobDto>();
+            var queues = _data.GetEnumeration<JobQueueDto>();
 
             var query = (from j in jobs
                 join q in queues on j.Id equals q.JobId
@@ -320,10 +327,10 @@ namespace Hangfire.MemoryStorage
             return new JobList<FetchedJobDto>(query);
         }
 
-        private static JobList<EnqueuedJobDto> EnqueuedJobs(IEnumerable<string> jobIds)
+        private JobList<EnqueuedJobDto> EnqueuedJobs(IEnumerable<string> jobIds)
         {
-            var jobs = Data.GetEnumeration<JobDto>();
-            var queues = Data.GetEnumeration<JobQueueDto>();
+            var jobs = _data.GetEnumeration<JobDto>();
+            var queues = _data.GetEnumeration<JobQueueDto>();
 
             var query = (from j in jobs
                 join q in queues on j.Id equals q.JobId
@@ -350,14 +357,14 @@ namespace Hangfire.MemoryStorage
             });
         }
 
-        private static JobList<TDto> GetJobs<TDto>(
+        private JobList<TDto> GetJobs<TDto>(
             int from,
             int count,
             string stateName,
             Func<JsonJob, Job, Dictionary<string, string>, TDto> selector)
         {
             var jobs =
-                Data.GetEnumeration<JobDto>().Where(j => j.StateName == stateName).OrderByDescending(j => j.CreatedAt);
+                _data.GetEnumeration<JobDto>().Where(j => j.StateName == stateName).OrderByDescending(j => j.CreatedAt);
 
             var query = (from job in jobs
                 select new JsonJob
@@ -390,7 +397,7 @@ namespace Hangfire.MemoryStorage
             }
         }
 
-        private static JobList<TDto> DeserializeJobs<TDto>(
+        private JobList<TDto> DeserializeJobs<TDto>(
             IEnumerable<JsonJob> jobs,
             Func<JsonJob, Job, Dictionary<string, string>, TDto> selector)
         {
@@ -405,9 +412,9 @@ namespace Hangfire.MemoryStorage
             return new JobList<TDto>(result);
         }
 
-        private static long GetNumberOfJobsByStateName(string stateName)
+        private long GetNumberOfJobsByStateName(string stateName)
         {
-            var count = Data.GetEnumeration<JobDto>().Count(j => j.StateName == stateName);
+            var count = _data.GetEnumeration<JobDto>().Count(j => j.StateName == stateName);
 
             return count;
         }

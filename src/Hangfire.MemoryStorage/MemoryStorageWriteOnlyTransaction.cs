@@ -21,16 +21,19 @@ namespace Hangfire.MemoryStorage
 
         private readonly AutoResetEvent CommitTriggerEvent;
 
-        public MemoryStorageWriteOnlyTransaction(AutoResetEvent commitTriggerEvent)
+        private readonly Data _data;
+
+        public MemoryStorageWriteOnlyTransaction(Data data, AutoResetEvent commitTriggerEvent)
         {
             this.CommitTriggerEvent = commitTriggerEvent;
+            _data = data;
         }
 
         public override void AddJobState(string jobId, IHangfireState state)
         {
             QueueCommand(() =>
             {
-                var job = Data.Get<JobDto>(jobId);
+                var job = _data.Get<JobDto>(jobId);
                 if (job == null)
                 {
                     return;
@@ -73,7 +76,7 @@ namespace Hangfire.MemoryStorage
                     JobId = jobId
                 };
 
-                Data.Create(jobQueue);
+                _data.Create(jobQueue);
             });
         }
 
@@ -86,7 +89,7 @@ namespace Hangfire.MemoryStorage
         {
             QueueCommand(() =>
             {
-                var set = Data.GetEnumeration<SetDto>().SingleOrDefault(s => s.Key == key && s.Value == value);
+                var set = _data.GetEnumeration<SetDto>().SingleOrDefault(s => s.Key == key && s.Value == value);
                 if (set == null)
                 {
                     set = new SetDto
@@ -96,7 +99,7 @@ namespace Hangfire.MemoryStorage
                         Value = value
                     };
 
-                    Data.Create(set);
+                    _data.Create(set);
                 }
 
                 set.Score = (long) score;
@@ -120,7 +123,7 @@ namespace Hangfire.MemoryStorage
         {
             QueueCommand(() =>
             {
-                var job = Data.Get<JobDto>(jobId);
+                var job = _data.Get<JobDto>(jobId);
                 if (job != null)
                 {
                     job.ExpireAt = DateTime.UtcNow.Add(expireIn);
@@ -132,7 +135,7 @@ namespace Hangfire.MemoryStorage
         {
             QueueCommand(() =>
             {
-                var setitems = Data.GetEnumeration<SetDto>().Where(s => s.Key == key);
+                var setitems = _data.GetEnumeration<SetDto>().Where(s => s.Key == key);
                 foreach (var setitem in setitems)
                 {
                     setitem.ExpireAt = DateTime.UtcNow.Add(expireIn);
@@ -144,7 +147,7 @@ namespace Hangfire.MemoryStorage
         {
             QueueCommand(() =>
             {
-                var hash = Data.GetEnumeration<HashDto>().Where(s => s.Key == key);
+                var hash = _data.GetEnumeration<HashDto>().Where(s => s.Key == key);
                 foreach (var hashitem in hash)
                 {
                     hashitem.ExpireAt = DateTime.UtcNow.Add(expireIn);
@@ -156,7 +159,7 @@ namespace Hangfire.MemoryStorage
         {
             QueueCommand(() =>
             {
-                var list = Data.GetEnumeration<ListDto>().Where(s => s.Key == key);
+                var list = _data.GetEnumeration<ListDto>().Where(s => s.Key == key);
                 foreach (var listitem in list)
                 {
                     listitem.ExpireAt = DateTime.UtcNow.Add(expireIn);
@@ -166,28 +169,28 @@ namespace Hangfire.MemoryStorage
 
         public override void IncrementCounter(string key)
         {
-            QueueCommand(() => { CounterUtilities.IncrementCounter(key, false); });
+            QueueCommand(() => { CounterUtilities.IncrementCounter(_data, key, false); });
         }
 
         public override void IncrementCounter(string key, TimeSpan expireIn)
         {
             QueueCommand(() =>
             {
-                var counter = CounterUtilities.IncrementCounter(key, false);
+                var counter = CounterUtilities.IncrementCounter(_data, key, false);
                 counter.ExpireAt = DateTime.UtcNow.Add(expireIn);
             });
         }
 
         public override void DecrementCounter(string key)
         {
-            QueueCommand(() => { CounterUtilities.IncrementCounter(key, true); });
+            QueueCommand(() => { CounterUtilities.IncrementCounter(_data, key, true); });
         }
 
         public override void DecrementCounter(string key, TimeSpan expireIn)
         {
             QueueCommand(() =>
             {
-                var counter = CounterUtilities.IncrementCounter(key, true);
+                var counter = CounterUtilities.IncrementCounter(_data, key, true);
                 counter.ExpireAt = DateTime.UtcNow.Add(expireIn);
             });
         }
@@ -203,7 +206,7 @@ namespace Hangfire.MemoryStorage
                     Value = value
                 };
 
-                Data.Create(list);
+                _data.Create(list);
             });
         }
 
@@ -211,7 +214,7 @@ namespace Hangfire.MemoryStorage
         {
             QueueCommand(() =>
             {
-                var job = Data.Get<JobDto>(jobId);
+                var job = _data.Get<JobDto>(jobId);
                 if (job != null)
                 {
                     job.ExpireAt = null;
@@ -223,10 +226,10 @@ namespace Hangfire.MemoryStorage
         {
             QueueCommand(() =>
             {
-                var list = Data.GetEnumeration<ListDto>().SingleOrDefault(j => j.Key == key && j.Value == value);
+                var list = _data.GetEnumeration<ListDto>().SingleOrDefault(j => j.Key == key && j.Value == value);
                 if (list != null)
                 {
-                    Data.Delete(list);
+                    _data.Delete(list);
                 }
             });
         }
@@ -235,10 +238,10 @@ namespace Hangfire.MemoryStorage
         {
             QueueCommand(() =>
             {
-                var set = Data.GetEnumeration<SetDto>().SingleOrDefault(j => j.Key == key && j.Value == value);
+                var set = _data.GetEnumeration<SetDto>().SingleOrDefault(j => j.Key == key && j.Value == value);
                 if (set != null)
                 {
-                    Data.Delete(set);
+                    _data.Delete(set);
                 }
             });
         }
@@ -249,10 +252,10 @@ namespace Hangfire.MemoryStorage
 
             QueueCommand(() =>
             {
-                var hash = Data.GetEnumeration<HashDto>().Where(j => j.Key == key).ToList();
+                var hash = _data.GetEnumeration<HashDto>().Where(j => j.Key == key).ToList();
                 if (hash.Any())
                 {
-                    Data.Delete(hash);
+                    _data.Delete(hash);
                 }
             });
         }
@@ -263,10 +266,10 @@ namespace Hangfire.MemoryStorage
 
             QueueCommand(() =>
             {
-                var set = Data.GetEnumeration<SetDto>().Where(j => j.Key == key).ToList();
+                var set = _data.GetEnumeration<SetDto>().Where(j => j.Key == key).ToList();
                 if (set.Any())
                 {
-                    Data.Delete(set);
+                    _data.Delete(set);
                 }
             });
         }
@@ -275,7 +278,7 @@ namespace Hangfire.MemoryStorage
         {
             QueueCommand(() =>
             {
-                var job = Data.Get<JobDto>(jobId);
+                var job = _data.Get<JobDto>(jobId);
                 if (job == null)
                 {
                     return;
@@ -318,7 +321,7 @@ namespace Hangfire.MemoryStorage
                 var local = kvp;
                 QueueCommand(() =>
                 {
-                    var hash = Data.GetEnumeration<HashDto>().SingleOrDefault(h => h.Key == key && h.Field == local.Key);
+                    var hash = _data.GetEnumeration<HashDto>().SingleOrDefault(h => h.Key == key && h.Field == local.Key);
                     if (hash == null)
                     {
                         hash = new HashDto
@@ -328,7 +331,7 @@ namespace Hangfire.MemoryStorage
                             Field = local.Key
                         };
 
-                        Data.Create(hash);
+                        _data.Create(hash);
                     }
 
                     hash.Value = local.Value;
@@ -354,7 +357,7 @@ namespace Hangfire.MemoryStorage
         {
             QueueCommand(() =>
             {
-                var set = Data.GetEnumeration<SetDto>().Where(s => s.Key == key);
+                var set = _data.GetEnumeration<SetDto>().Where(s => s.Key == key);
                 foreach (var item in set)
                 {
                     item.ExpireAt = null;
@@ -366,7 +369,7 @@ namespace Hangfire.MemoryStorage
         {
             QueueCommand(() =>
             {
-                var hash = Data.GetEnumeration<HashDto>().Where(s => s.Key == key);
+                var hash = _data.GetEnumeration<HashDto>().Where(s => s.Key == key);
                 foreach (var item in hash)
                 {
                     item.ExpireAt = null;
@@ -378,7 +381,7 @@ namespace Hangfire.MemoryStorage
         {
             QueueCommand(() =>
             {
-                var list = Data.GetEnumeration<ListDto>().Where(s => s.Key == key);
+                var list = _data.GetEnumeration<ListDto>().Where(s => s.Key == key);
                 foreach (var item in list)
                 {
                     item.ExpireAt = null;
@@ -391,7 +394,7 @@ namespace Hangfire.MemoryStorage
             this.QueueCommand(() =>
             {
 
-                var existingSet = Data.GetEnumeration<SetDto>().Where(s => s.Key == key).Select(s => s.Value).ToList();
+                var existingSet = _data.GetEnumeration<SetDto>().Where(s => s.Key == key).Select(s => s.Value).ToList();
                 foreach (var item in items.Where(i => !existingSet.Contains(i)))
                 {
                     var newSet = new SetDto
@@ -400,7 +403,7 @@ namespace Hangfire.MemoryStorage
                         Key = key,
                         Value = item
                     };
-                    Data.Create(newSet);
+                    _data.Create(newSet);
                 }
             });
         }

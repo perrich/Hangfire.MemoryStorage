@@ -9,11 +9,13 @@ namespace Hangfire.MemoryStorage
         private bool _disposed;
         private bool _removedFromQueue;
         private bool _requeued;
+        private readonly Data _data; 
 
-        public MemoryStorageFetchedJob(JobQueueDto queue)
+        public MemoryStorageFetchedJob(Data data, JobQueueDto queue)
         {
             Id = queue.Id;
             JobId = queue.JobId;
+            _data = data;
         }
 
         public int Id { get; private set; }
@@ -21,10 +23,10 @@ namespace Hangfire.MemoryStorage
 
         public void RemoveFromQueue()
         {
-            var queue = Data.Get<JobQueueDto>(Id);
+            var queue = _data.Get<JobQueueDto>(Id);
             if (queue != null)
             {
-                Data.Delete(queue);
+                _data.Delete(queue);
             }
 
             _removedFromQueue = true;
@@ -32,7 +34,7 @@ namespace Hangfire.MemoryStorage
 
         public void Requeue()
         {
-            var queue = Data.Get<JobQueueDto>(Id);
+            var queue = _data.Get<JobQueueDto>(Id);
             if (queue != null)
             {
                 queue.FetchedAt = null;
