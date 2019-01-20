@@ -15,10 +15,12 @@ namespace Hangfire.MemoryStorage
     {
         private static readonly object FetchJobsLock = new object();
         private readonly TimeSpan _fetchNextJobTimeout;
+        private readonly Data _data;
 
-        public MemoryStorageConnection(TimeSpan fetchNextJobTimeout)
+        public MemoryStorageConnection(Data data, TimeSpan fetchNextJobTimeout)
         {
             _fetchNextJobTimeout = fetchNextJobTimeout;
+            _data = data;
         }
 
         internal static readonly AutoResetEvent NewItemInQueueEvent = new AutoResetEvent(true);
@@ -33,7 +35,7 @@ namespace Hangfire.MemoryStorage
             Guard.ArgumentNotNull(serverId, "serverId");
             Guard.ArgumentNotNull(context, "context");
 
-            var server = Data.GetOrCreate(serverId, new ServerDto
+            var server = _data.GetOrCreate(serverId, new ServerDto
             {
                 Id = serverId
             });
@@ -66,7 +68,7 @@ namespace Hangfire.MemoryStorage
                 ExpireAt = createdAt.Add(expireIn)
             };
 
-            Data.Create(jobData);
+            _data.Create(jobData);
 
             if (parameters.Count > 0)
             {
@@ -86,7 +88,7 @@ namespace Hangfire.MemoryStorage
 
         public override IWriteOnlyTransaction CreateWriteTransaction()
         {
-            return new MemoryStorageWriteOnlyTransaction(NewItemInQueueEvent);
+            return new MemoryStorageWriteOnlyTransaction(_data, NewItemInQueueEvent);
         }
 
         public override IFetchedJob FetchNextJob(string[] queues, CancellationToken cancellationToken)
@@ -102,7 +104,7 @@ namespace Hangfire.MemoryStorage
 
                 lock (FetchJobsLock)
                 {
-                    var jobQueues = Data.GetEnumeration<JobQueueDto>();
+                    var jobQueues = _data.GetEnumeration<JobQueueDto>();
 
                     queue = (from q in jobQueues
                         where queues.Contains(q.Queue)
@@ -121,14 +123,14 @@ namespace Hangfire.MemoryStorage
                 cancellationToken.ThrowIfCancellationRequested();
             }
 
-            return new MemoryStorageFetchedJob(queue);
+            return new MemoryStorageFetchedJob(_data, queue);
         }
 
         public override Dictionary<string, string> GetAllEntriesFromHash(string key)
         {
             Guard.ArgumentNotNull(key, "key");
 
-            var hashes = Data.GetEnumeration<HashDto>()
+            var hashes = _data.GetEnumeration<HashDto>()
                 .Where(h => h.Key == key)
                 .ToDictionary(h => h.Field, h => h.Value);
 
@@ -139,7 +141,7 @@ namespace Hangfire.MemoryStorage
         {
             Guard.ArgumentNotNull(key, "key");
 
-            var values = Data.GetEnumeration<SetDto>().Where(s => s.Key == key).Select(s => s.Value);
+            var values = _data.GetEnumeration<SetDto>().Where(s => s.Key == key).Select(s => s.Value);
 
             return new HashSet<string>(values);
         }
@@ -153,7 +155,7 @@ namespace Hangfire.MemoryStorage
                 throw new ArgumentException("The `toScore` value must be higher or equal to the `fromScore` value.");
             }
 
-            var set = Data.GetEnumeration<SetDto>()
+            var set = _data.GetEnumeration<SetDto>()
                 .Where(s => s.Key == key && s.Score >= fromScore && s.Score <= toScore)
                 .OrderByDescending(s => s.Score)
                 .FirstOrDefault();
@@ -165,7 +167,7 @@ namespace Hangfire.MemoryStorage
         {
             Guard.ArgumentNotNull(jobId, "jobId");
 
-            var jobData = Data.Get<JobDto>(jobId);
+            var jobData = _data.Get<JobDto>(jobId);
             if (jobData == null)
             {
                 return null;
@@ -201,7 +203,7 @@ namespace Hangfire.MemoryStorage
             Guard.ArgumentNotNull(id, "id");
             Guard.ArgumentNotNull(name, "name");
 
-            var jobData = Data.Get<JobDto>(id);
+            var jobData = _data.Get<JobDto>(id);
             if (jobData == null)
             {
                 return null;
@@ -231,7 +233,7 @@ namespace Hangfire.MemoryStorage
         {
             Guard.ArgumentNotNull(jobId, "jobId");
 
-            var jobData = Data.Get<JobDto>(jobId);
+            var jobData = _data.Get<JobDto>(jobId);
             if (jobData == null || jobData.State == null)
             {
                 return null;
@@ -252,7 +254,7 @@ namespace Hangfire.MemoryStorage
             Guard.ArgumentNotNull(key, "key");
             Guard.ArgumentNotNull(name, "name");
 
-            return Data.GetEnumeration<HashDto>()
+            return _data.GetEnumeration<HashDto>()
                 .Where(h => h.Key == key && h.Field == name)
                 .Select(h => h.Value).SingleOrDefault();
         }
@@ -261,7 +263,7 @@ namespace Hangfire.MemoryStorage
         {
             Guard.ArgumentNotNull(key, "key");
 
-            return Data.GetEnumeration<ListDto>()
+            return _data.GetEnumeration<ListDto>()
                 .Where(l => l.Key == key)
                 .OrderBy(l => l.Id)
                 .Select(l => l.Value)
@@ -272,7 +274,7 @@ namespace Hangfire.MemoryStorage
         {
             Guard.ArgumentNotNull(key, "key");
 
-            return CounterUtilities.GetCombinedCounter(key);
+            return CounterUtilities.GetCombinedCounter(_data, key);
         }
 
         public override TimeSpan GetHashTtl(string key)
@@ -296,7 +298,7 @@ namespace Hangfire.MemoryStorage
 
             var count = endingAt - startingFrom;
 
-            return Data.GetEnumeration<ListDto>()
+            return _data.GetEnumeration<ListDto>()
                 .Where(l => l.Key == key)
                 .OrderBy(l => l.Id)
                 .Skip(startingFrom)
@@ -311,7 +313,7 @@ namespace Hangfire.MemoryStorage
 
             var count = endingAt - startingFrom;
 
-            return Data.GetEnumeration<SetDto>()
+            return _data.GetEnumeration<SetDto>()
                 .Where(s => s.Key == key)
                 .OrderBy(s => s.Id)
                 .Skip(startingFrom)
@@ -324,7 +326,7 @@ namespace Hangfire.MemoryStorage
         {
             Guard.ArgumentNotNull(serverId, "serverId");
 
-            var server = Data.Get<ServerDto>(serverId);
+            var server = _data.Get<ServerDto>(serverId);
             if (server == null)
             {
                 return;
@@ -337,10 +339,10 @@ namespace Hangfire.MemoryStorage
         {
             Guard.ArgumentNotNull(serverId, "serverId");
 
-            var server = Data.Get<ServerDto>(serverId);
+            var server = _data.Get<ServerDto>(serverId);
             if (server != null)
             {
-                Data.Delete(server);
+                _data.Delete(server);
             }
         }
 
@@ -352,9 +354,9 @@ namespace Hangfire.MemoryStorage
             }
 
             var timeOutAt = DateTime.UtcNow.Add(timeOut.Negate());
-            var servers = Data.GetEnumeration<ServerDto>().Where(s => s.LastHeartbeat < timeOutAt).ToList();
+            var servers = _data.GetEnumeration<ServerDto>().Where(s => s.LastHeartbeat < timeOutAt).ToList();
 
-            Data.Delete(servers);
+            _data.Delete(servers);
 
             return servers.Count;
         }
@@ -364,7 +366,7 @@ namespace Hangfire.MemoryStorage
             Guard.ArgumentNotNull(id, "id");
             Guard.ArgumentNotNull(name, "name");
 
-            var jobData = Data.Get<JobDto>(id);
+            var jobData = _data.Get<JobDto>(id);
             if (jobData == null)
             {
                 return;
@@ -394,7 +396,7 @@ namespace Hangfire.MemoryStorage
 
             foreach (var kvp in keyValuePairs)
             {
-                var hash = Data.GetEnumeration<HashDto>().SingleOrDefault(h => h.Key == key && h.Field == kvp.Key);
+                var hash = _data.GetEnumeration<HashDto>().SingleOrDefault(h => h.Key == key && h.Field == kvp.Key);
                 if (hash == null)
                 {
                     hash = new HashDto
@@ -404,7 +406,7 @@ namespace Hangfire.MemoryStorage
                         Field = kvp.Key
                     };
 
-                    Data.Create(hash);
+                    _data.Create(hash);
                 }
 
                 hash.Value = kvp.Value;
@@ -415,7 +417,7 @@ namespace Hangfire.MemoryStorage
         {
             Guard.ArgumentNotNull(key, "key");
 
-            var date = Data.GetEnumeration<T>().Select(l => l.ExpireAt).Min();
+            var date = _data.GetEnumeration<T>().Select(l => l.ExpireAt).Min();
 
             return date.HasValue ? date.Value - DateTime.UtcNow : TimeSpan.FromSeconds(-1);
         }
@@ -424,7 +426,7 @@ namespace Hangfire.MemoryStorage
         {
             Guard.ArgumentNotNull(key, "key");
 
-            return Data.GetEnumeration<T>().Count(h => h.Key == key);
+            return _data.GetEnumeration<T>().Count(h => h.Key == key);
         }
     }
 }

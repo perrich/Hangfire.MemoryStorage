@@ -4,7 +4,7 @@
     <Description>A memory storage for Hangfire</Description>
     <Copyright>Copyright 2015-2017</Copyright>
     <AssemblyTitle>Hangfire.MemoryStorage</AssemblyTitle>
-    <VersionPrefix>1.5.1</VersionPrefix>
+    <VersionPrefix>1.6.0</VersionPrefix>
     <Authors>PERRICHOT Florian</Authors>
     <TargetFrameworks>net45;netstandard1.3</TargetFrameworks>
     <AssemblyName>Hangfire.MemoryStorage</AssemblyName>
@@ -14,8 +14,8 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/perrich/Hangfire.MemoryStorage</RepositoryUrl>
     <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>
-    <Version>1.5.2</Version>
-    <AssemblyVersion>1.5.2.0</AssemblyVersion>
+    <Version>1.6.0</Version>
+    <AssemblyVersion>1.6.0.0</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>

@@ -15,6 +15,7 @@ namespace Hangfire.MemoryStorage
     {
         private const int NumberOfRecordsInSinglePass = 1000;
         private static readonly TimeSpan DelayBetweenPasses = TimeSpan.FromSeconds(1);
+        private readonly Data _data;
 
         private static readonly Type[] Types =
         {
@@ -27,8 +28,9 @@ namespace Hangfire.MemoryStorage
 
         private readonly TimeSpan _checkInterval;
 
-        public ExpirationManager(TimeSpan checkInterval)
+        public ExpirationManager(Data data, TimeSpan checkInterval)
         {
+            _data = data;
             _checkInterval = checkInterval;
         }
 
@@ -45,7 +47,7 @@ namespace Hangfire.MemoryStorage
 
                 do
                 {
-                    var table = Data.GetEnumeration(t.AsType());
+                    var table = _data.GetEnumeration(t.AsType());
                     var data = (from d in table
                         where ((IExpirable)d).ExpireAt < now
                         select d).Take(NumberOfRecordsInSinglePass).ToList();
@@ -59,11 +61,11 @@ namespace Hangfire.MemoryStorage
 
                     if (typeof(IIdentifiedData<int>).GetTypeInfo().IsAssignableFrom(t))
                     {
-                        Data.Delete(data.Cast<IIdentifiedData<int>>());
+                        _data.Delete(data.Cast<IIdentifiedData<int>>());
                     }
                     else if (typeof(IIdentifiedData<string>).GetTypeInfo().IsAssignableFrom(t))
                     {
-                        Data.Delete(data.Cast<IIdentifiedData<string>>());
+                        _data.Delete(data.Cast<IIdentifiedData<string>>());
                     }
 
                     cancellationToken.WaitHandle.WaitOne(DelayBetweenPasses);
