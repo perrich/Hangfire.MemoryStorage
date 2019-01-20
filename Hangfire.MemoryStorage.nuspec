@@ -11,7 +11,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>A memory storage for Hangfire</description>
     <releaseNotes>Second release.</releaseNotes>
-    <copyright>Copyright 2015-2017</copyright>
+    <copyright>Copyright 2015-2018</copyright>
     <tags>Hangfire Storage</tags>
     <dependencies>
       <dependency id="Hangfire.Core" version="1.6.1" />

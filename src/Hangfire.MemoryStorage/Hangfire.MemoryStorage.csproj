@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>A memory storage for Hangfire</Description>
-    <Copyright>Copyright 2015-2017</Copyright>
+    <Copyright>Copyright 2015-2018</Copyright>
     <AssemblyTitle>Hangfire.MemoryStorage</AssemblyTitle>
     <VersionPrefix>1.6.0</VersionPrefix>
     <Authors>PERRICHOT Florian</Authors>
