@@ -296,7 +296,7 @@ namespace Hangfire.MemoryStorage
         {
             Guard.ArgumentNotNull(key, "key");
 
-            var count = endingAt - startingFrom;
+            var count = (endingAt - startingFrom) + 1;
 
             return _data.GetEnumeration<ListDto>()
                 .Where(l => l.Key == key)
@@ -311,7 +311,7 @@ namespace Hangfire.MemoryStorage
         {
             Guard.ArgumentNotNull(key, "key");
 
-            var count = endingAt - startingFrom;
+            var count = (endingAt - startingFrom) + 1;
 
             return _data.GetEnumeration<SetDto>()
                 .Where(s => s.Key == key)
