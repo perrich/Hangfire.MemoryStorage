@@ -106,11 +106,17 @@ namespace Hangfire.MemoryStorage
                 {
                     var jobQueues = _data.GetEnumeration<JobQueueDto>();
 
-                    queue = (from q in jobQueues
-                        where queues.Contains(q.Queue)
-                              && (!q.FetchedAt.HasValue || q.FetchedAt.Value < timeout)
-                        orderby q.AddedAt descending
-                        select q).FirstOrDefault();
+                    queue = jobQueues.FirstOrDefault();
+                    foreach (var qName in queues)
+                    {
+                        queue = (from q in jobQueues
+                                 where q.Queue == qName
+                                       && (!q.FetchedAt.HasValue || q.FetchedAt.Value < timeout)
+                                 orderby q.AddedAt descending
+                                 select q).FirstOrDefault();
+                        if (queue != null)
+                            break;
+                    }
 
                     if (queue != null)
                     {
