@@ -179,7 +179,7 @@ namespace Hangfire.MemoryStorage
                 return null;
             }
 
-            var invocationData = JobHelper.FromJson<InvocationData>(jobData.InvocationData);
+            var invocationData = SerializationHelper.Deserialize<InvocationData>(jobData.InvocationData, SerializationOption.User);
 
             invocationData.Arguments = jobData.Arguments;
 
@@ -250,7 +250,7 @@ namespace Hangfire.MemoryStorage
                 Name = jobData.State.Name,
                 Reason = jobData.State.Reason,
                 Data = new Dictionary<string, string>(
-                    JobHelper.FromJson<Dictionary<string, string>>(jobData.State.Data),
+                    SerializationHelper.Deserialize<Dictionary<string, string>>(jobData.State.Data, SerializationOption.User),
                     StringComparer.OrdinalIgnoreCase)
             };
         }
