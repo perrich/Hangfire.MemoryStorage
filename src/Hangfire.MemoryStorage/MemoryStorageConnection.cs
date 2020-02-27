@@ -57,7 +57,7 @@ namespace Hangfire.MemoryStorage
             Guard.ArgumentNotNull(job, "job");
             Guard.ArgumentNotNull(parameters, "parameters");
 
-            var invocationData = InvocationData.Serialize(job);
+            var invocationData = InvocationData.SerializeJob(job);
 
             var jobData = new JobDto
             {
@@ -188,7 +188,7 @@ namespace Hangfire.MemoryStorage
 
             try
             {
-                job = invocationData.Deserialize();
+                job = invocationData.DeserializeJob();
             }
             catch (JobLoadException ex)
             {
