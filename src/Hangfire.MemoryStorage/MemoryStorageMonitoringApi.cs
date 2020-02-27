@@ -212,7 +212,7 @@ namespace Hangfire.MemoryStorage
 
             var query =
                 from server in servers
-                let serverData = JobHelper.FromJson<ServerData>(server.Data)
+                let serverData = SerializationHelper.Deserialize<ServerData>(server.Data, SerializationOption.User)
                 select new ServerDto
                 {
                     Name = server.Id,
@@ -384,7 +384,7 @@ namespace Hangfire.MemoryStorage
 
         private static Job DeserializeJob(string invocationData, string arguments)
         {
-            var data = JobHelper.FromJson<InvocationData>(invocationData);
+            var data = SerializationHelper.Deserialize<InvocationData>(invocationData, SerializationOption.User);
             data.Arguments = arguments;
 
             try
@@ -402,7 +402,7 @@ namespace Hangfire.MemoryStorage
             Func<JsonJob, Job, Dictionary<string, string>, TDto> selector)
         {
             var result = from job in jobs
-                let deserializedData = JobHelper.FromJson<Dictionary<string, string>>(job.StateData)
+                let deserializedData = SerializationHelper.Deserialize<Dictionary<string, string>>(job.StateData, SerializationOption.User)
                 let stateData = deserializedData != null
                     ? new Dictionary<string, string>(deserializedData, StringComparer.OrdinalIgnoreCase)
                     : null
