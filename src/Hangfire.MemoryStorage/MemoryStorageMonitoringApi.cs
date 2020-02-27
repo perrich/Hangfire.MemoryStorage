@@ -389,7 +389,7 @@ namespace Hangfire.MemoryStorage
 
             try
             {
-                return data.Deserialize();
+                return data.DeserializeJob();
             }
             catch (JobLoadException)
             {
