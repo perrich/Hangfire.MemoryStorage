@@ -49,7 +49,7 @@ namespace Hangfire.MemoryStorage
                     Name = state.Name,
                     Reason = state.Reason,
                     CreatedAt = createdAt,
-                    Data = JobHelper.ToJson(serializedStateData)
+                    Data = SerializationHelper.Serialize(serializedStateData, null, SerializationOption.User)
                 };
 
                 var stateHistory = new StateHistoryDto
@@ -294,7 +294,7 @@ namespace Hangfire.MemoryStorage
                     Name = state.Name,
                     Reason = state.Reason,
                     CreatedAt = createdAt,
-                    Data = JobHelper.ToJson(serializedStateData)
+                    Data = SerializationHelper.Serialize(serializedStateData, null, SerializationOption.User)
                 };
 
                 var stateHistory = new StateHistoryDto
