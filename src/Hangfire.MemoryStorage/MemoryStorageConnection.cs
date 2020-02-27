@@ -48,7 +48,7 @@ namespace Hangfire.MemoryStorage
             };
 
             server.LastHeartbeat = DateTime.UtcNow;
-            server.Data = JobHelper.ToJson(data);
+            server.Data = SerializationHelper.Serialize(data, null, SerializationOption.User);
         }
 
         public override string CreateExpiredJob(Job job, IDictionary<string, string> parameters, DateTime createdAt,
@@ -62,7 +62,7 @@ namespace Hangfire.MemoryStorage
             var jobData = new JobDto
             {
                 Id = Guid.NewGuid().ToString(),
-                InvocationData = JobHelper.ToJson(invocationData),
+                InvocationData = SerializationHelper.Serialize(invocationData, null, SerializationOption.User),
                 Arguments = invocationData.Arguments,
                 CreatedAt = createdAt,
                 ExpireAt = createdAt.Add(expireIn)
