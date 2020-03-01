@@ -48,7 +48,7 @@ namespace Hangfire.MemoryStorage
             };
 
             server.LastHeartbeat = DateTime.UtcNow;
-            server.Data = JobHelper.ToJson(data);
+            server.Data = SerializationHelper.Serialize(data, null, SerializationOption.User);
         }
 
         public override string CreateExpiredJob(Job job, IDictionary<string, string> parameters, DateTime createdAt,
@@ -57,12 +57,12 @@ namespace Hangfire.MemoryStorage
             Guard.ArgumentNotNull(job, "job");
             Guard.ArgumentNotNull(parameters, "parameters");
 
-            var invocationData = InvocationData.Serialize(job);
+            var invocationData = InvocationData.SerializeJob(job);
 
             var jobData = new JobDto
             {
                 Id = Guid.NewGuid().ToString(),
-                InvocationData = JobHelper.ToJson(invocationData),
+                InvocationData = SerializationHelper.Serialize(invocationData, null, SerializationOption.User),
                 Arguments = invocationData.Arguments,
                 CreatedAt = createdAt,
                 ExpireAt = createdAt.Add(expireIn)
@@ -179,7 +179,7 @@ namespace Hangfire.MemoryStorage
                 return null;
             }
 
-            var invocationData = JobHelper.FromJson<InvocationData>(jobData.InvocationData);
+            var invocationData = SerializationHelper.Deserialize<InvocationData>(jobData.InvocationData, SerializationOption.User);
 
             invocationData.Arguments = jobData.Arguments;
 
@@ -188,7 +188,7 @@ namespace Hangfire.MemoryStorage
 
             try
             {
-                job = invocationData.Deserialize();
+                job = invocationData.DeserializeJob();
             }
             catch (JobLoadException ex)
             {
@@ -250,7 +250,7 @@ namespace Hangfire.MemoryStorage
                 Name = jobData.State.Name,
                 Reason = jobData.State.Reason,
                 Data = new Dictionary<string, string>(
-                    JobHelper.FromJson<Dictionary<string, string>>(jobData.State.Data),
+                    SerializationHelper.Deserialize<Dictionary<string, string>>(jobData.State.Data, SerializationOption.User),
                     StringComparer.OrdinalIgnoreCase)
             };
         }
