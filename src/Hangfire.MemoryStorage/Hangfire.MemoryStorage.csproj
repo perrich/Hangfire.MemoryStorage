@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>A memory storage for Hangfire</Description>
-    <Copyright>Copyright 2015-2019</Copyright>
+    <Copyright>Copyright 2015-2020</Copyright>
     <AssemblyTitle>Hangfire.MemoryStorage</AssemblyTitle>
     <VersionPrefix>1.6.2</VersionPrefix>
     <Authors>PERRICHOT Florian</Authors>
@@ -14,8 +14,8 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/perrich/Hangfire.MemoryStorage</RepositoryUrl>
     <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>
-    <Version>1.6.3</Version>
-    <AssemblyVersion>1.6.3.0</AssemblyVersion>
+    <Version>1.7.0</Version>
+    <AssemblyVersion>1.7.0.0</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
