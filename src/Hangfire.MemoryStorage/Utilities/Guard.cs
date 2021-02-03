@@ -7,7 +7,7 @@ namespace Hangfire.MemoryStorage.Utilities
         public static void ArgumentNotNull(object argument, string name)
         {
             if (argument == null)
-                throw new ArgumentException("Argment " + name + " should not be null!");
+                throw new ArgumentException("Argument " + name + " should not be null!");
         }
 
         public static void ArgumentCondition(bool condition, string name, string message)
