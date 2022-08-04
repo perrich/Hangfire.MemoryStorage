@@ -7,6 +7,7 @@ It can be useful for testing purpose like check the behaviour and use it in a de
 Please note that :
 * it should not be used in production (no integrity and no thread safe even if many cases are managed).
 * data are stored in memory using a dictionary in a static way (See Data created at the storage creation)
+* Hangfire has its own solution (see https://github.com/HangfireIO/Hangfire.InMemory)
 
 How To use MemoryStorage
 ---
@@ -55,7 +56,7 @@ test.txt <br />
 
 License:
 ---
-Copyright 2015 - 2018 PERRICHOT Florian
+Copyright 2015 - 2022 PERRICHOT Florian
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
