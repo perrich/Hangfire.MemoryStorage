@@ -5,6 +5,7 @@ using System.Threading;
 using Hangfire.Common;
 using Hangfire.MemoryStorage.Database;
 using Hangfire.MemoryStorage.Dto;
+using Hangfire.MemoryStorage.Entities;
 using Hangfire.MemoryStorage.Utilities;
 using Hangfire.Server;
 using Hangfire.Storage;
@@ -40,10 +41,10 @@ namespace Hangfire.MemoryStorage
                 Id = serverId
             });
 
-            var data = new
+            var data = new ServerData
             {
-                context.WorkerCount,
-                context.Queues,
+                WorkerCount = context.WorkerCount,
+                Queues = context.Queues,
                 StartedAt = DateTime.UtcNow
             };
 
@@ -435,4 +436,4 @@ namespace Hangfire.MemoryStorage
             return _data.GetEnumeration<T>().Count(h => h.Key == key);
         }
     }
-}
+} 
