@@ -31,7 +31,7 @@ namespace Hangfire.MemoryStorage
         public override IDisposable AcquireDistributedLock(string resource, TimeSpan timeout)
         {
             // try to acquire an existing lock or create a new one if none exists for the resource
-            // in case of an timeout throw a SynchronizationLockException
+            // in case of an timeout throw a DistributedLockTimeoutException (was SynchronizationLockException before)
             if(!_locks.GetOrAdd(resource, new SemaphoreSlim(1)).Wait(timeout))
                 throw new DistributedLockTimeoutException(resource);
 
