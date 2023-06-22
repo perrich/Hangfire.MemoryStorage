@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -17,6 +18,7 @@ namespace Hangfire.MemoryStorage
         private static readonly object FetchJobsLock = new object();
         private readonly TimeSpan _fetchNextJobTimeout;
         private readonly Data _data;
+        private readonly ConcurrentDictionary<string, SemaphoreSlim> _locks = new ConcurrentDictionary<string, SemaphoreSlim>();
 
         public MemoryStorageConnection(Data data, TimeSpan fetchNextJobTimeout)
         {
@@ -28,7 +30,18 @@ namespace Hangfire.MemoryStorage
 
         public override IDisposable AcquireDistributedLock(string resource, TimeSpan timeout)
         {
-            return LocalLock.AcquireLock(resource, timeout);
+            // try to acquire an existing lock or create a new one if none exists for the resource
+            // in case of an timeout throw a SynchronizationLockException
+            if(!_locks.GetOrAdd(resource, new SemaphoreSlim(1)).Wait(timeout))
+                throw new SynchronizationLockException();
+
+            // return an IDisposable that releases the lock when disposed
+            return Disposable.Create(() =>
+            {
+                _locks.TryRemove(resource, out SemaphoreSlim lockInstance);
+                lockInstance?.Release();
+                lockInstance?.Dispose();
+            });
         }
 
         public override void AnnounceServer(string serverId, ServerContext context)
@@ -434,6 +447,16 @@ namespace Hangfire.MemoryStorage
             Guard.ArgumentNotNull(key, "key");
 
             return _data.GetEnumeration<T>().Count(h => h.Key == key);
+        }
+
+        public override void Dispose()
+        {
+            // get rid of all the semaphores
+            foreach(var semaphore in _locks.Values)
+            {
+                semaphore.Dispose();
+            }
+            base.Dispose();
         }
     }
 } 
