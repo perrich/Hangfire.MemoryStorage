@@ -18,7 +18,7 @@ namespace Hangfire.MemoryStorage
         private static readonly object FetchJobsLock = new object();
         private readonly TimeSpan _fetchNextJobTimeout;
         private readonly Data _data;
-        private readonly ConcurrentDictionary<string, SemaphoreSlim> _locks = new ConcurrentDictionary<string, SemaphoreSlim>();
+        private static readonly ConcurrentDictionary<string, SemaphoreSlim> _locks = new ConcurrentDictionary<string, SemaphoreSlim>();
 
         public MemoryStorageConnection(Data data, TimeSpan fetchNextJobTimeout)
         {
@@ -447,16 +447,6 @@ namespace Hangfire.MemoryStorage
             Guard.ArgumentNotNull(key, "key");
 
             return _data.GetEnumeration<T>().Count(h => h.Key == key);
-        }
-
-        public override void Dispose()
-        {
-            // get rid of all the semaphores
-            foreach(var semaphore in _locks.Values)
-            {
-                semaphore.Dispose();
-            }
-            base.Dispose();
         }
     }
 } 
