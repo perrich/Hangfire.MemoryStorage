@@ -33,7 +33,7 @@ namespace Hangfire.MemoryStorage
             // try to acquire an existing lock or create a new one if none exists for the resource
             // in case of an timeout throw a SynchronizationLockException
             if(!_locks.GetOrAdd(resource, new SemaphoreSlim(1)).Wait(timeout))
-                throw new SynchronizationLockException();
+                throw new DistributedLockTimeoutException(resource);
 
             // return an IDisposable that releases the lock when disposed
             return Disposable.Create(() =>
