@@ -2,16 +2,16 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>Hangfire.MemoryStorage</id>
-    <version>1.7.1.0</version>
+    <version>1.8.0.0</version>
     <title>Hangfire.MemoryStorage</title>
     <authors>PERRICHOT Florian</authors>
     <owners>PERRICHOT Florian</owners>
-    <licenseUrl>http://www.apache.org/licenses/LICENSE-2.0</licenseUrl>
-	<projectUrl>https://github.com/perrich/Hangfire.MemoryStorage</projectUrl>
+    <license type="expression">APACHE LICENSE, VERSION 2.0</license>
+    <projectUrl>https://github.com/perrich/Hangfire.MemoryStorage</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>A memory storage for Hangfire</description>
     <releaseNotes>Second release.</releaseNotes>
-    <copyright>Copyright 2015-2020</copyright>
+    <copyright>Copyright 2015-2023</copyright>
     <tags>Hangfire Storage</tags>
     <dependencies>
       <dependency id="Hangfire.Core" version="1.7.35" />
