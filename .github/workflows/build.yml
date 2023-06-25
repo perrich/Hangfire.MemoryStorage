@@ -10,10 +10,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
-      - uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v3
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
       - name: Restore dependencies
-      - run: dotnet restore
+        run: dotnet restore
       - name: Build
-      - run: dotnet build --configuration Release --no-restore
+        run: dotnet build --configuration Release --no-restore
