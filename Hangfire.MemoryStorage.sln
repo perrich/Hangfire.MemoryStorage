@@ -5,12 +5,13 @@ VisualStudioVersion = 17.7.33808.371
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9450451F-1924-4B69-BDDA-AB26964935E6}"
 	ProjectSection(SolutionItems) = preProject
+		.github\workflows\build.yml = .github\workflows\build.yml
 		NuGet.Config = NuGet.Config
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.MemoryStorage", "src\Hangfire.MemoryStorage\Hangfire.MemoryStorage.csproj", "{5F42DF92-7226-4C35-A515-88062683B6CE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.MemoryStorage.UnitTest", "src\Hangfire.MemoryStorage.UnitTest\Hangfire.MemoryStorage.UnitTest.csproj", "{0DB550D8-D903-4EDC-A609-9FD5FEADC6C8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.MemoryStorage.UnitTest", "src\Hangfire.MemoryStorage.UnitTest\Hangfire.MemoryStorage.UnitTest.csproj", "{0DB550D8-D903-4EDC-A609-9FD5FEADC6C8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
