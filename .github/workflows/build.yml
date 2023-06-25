@@ -1,6 +1,6 @@
 name: build-ci
-run-name: ${{ github.actor }}
-on: [push]
+on: [push, pull_request]
+
 jobs:
   build-lib:
     runs-on: ubuntu-latest
