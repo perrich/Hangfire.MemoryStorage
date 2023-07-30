@@ -15,18 +15,17 @@ namespace Hangfire.MemoryStorage
 {
     public class MemoryStorageConnection : JobStorageConnection
     {
-        private static readonly object FetchJobsLock = new object();
+        private readonly object FetchJobsLock = new object();
         private readonly TimeSpan _fetchNextJobTimeout;
         private readonly Data _data;
-        private static readonly ConcurrentDictionary<string, SemaphoreSlim> _locks = new ConcurrentDictionary<string, SemaphoreSlim>();
+        private readonly ConcurrentDictionary<string, SemaphoreSlim> _locks = new ConcurrentDictionary<string, SemaphoreSlim>();
+        private readonly AutoResetEvent _newItemInQueueEvent = new AutoResetEvent(true);
 
         public MemoryStorageConnection(Data data, TimeSpan fetchNextJobTimeout)
         {
             _fetchNextJobTimeout = fetchNextJobTimeout;
             _data = data;
         }
-
-        internal static readonly AutoResetEvent NewItemInQueueEvent = new AutoResetEvent(true);
 
         public override IDisposable AcquireDistributedLock(string resource, TimeSpan timeout)
         {
@@ -102,7 +101,7 @@ namespace Hangfire.MemoryStorage
 
         public override IWriteOnlyTransaction CreateWriteTransaction()
         {
-            return new MemoryStorageWriteOnlyTransaction(_data, NewItemInQueueEvent);
+            return new MemoryStorageWriteOnlyTransaction(_data, _newItemInQueueEvent);
         }
 
         public override IFetchedJob FetchNextJob(string[] queues, CancellationToken cancellationToken)
@@ -139,7 +138,7 @@ namespace Hangfire.MemoryStorage
                     }
                 }
 
-                WaitHandle.WaitAny(new[] { cancellationToken.WaitHandle, NewItemInQueueEvent }, TimeSpan.FromSeconds(15));
+                WaitHandle.WaitAny(new[] { cancellationToken.WaitHandle, _newItemInQueueEvent }, TimeSpan.FromSeconds(15));
                 cancellationToken.ThrowIfCancellationRequested();
             }
 
