@@ -9,6 +9,9 @@ namespace Hangfire.MemoryStorage
     {
         private readonly MemoryStorageOptions _options;
 
+        private readonly object _connectionLock = new object();
+        private MemoryStorageConnection _connection;
+
         public Data Data { get; }
 
         public MemoryStorage() : this(new MemoryStorageOptions(), new Data())
@@ -27,7 +30,12 @@ namespace Hangfire.MemoryStorage
 
         public override IStorageConnection GetConnection()
         {
-            return new MemoryStorageConnection(Data, _options.FetchNextJobTimeout);
+            lock (_connectionLock)
+            {
+                if (_connection == null)
+                    _connection = new MemoryStorageConnection(Data, _options.FetchNextJobTimeout);
+            }
+            return _connection;
         }
 
         public override IMonitoringApi GetMonitoringApi()
