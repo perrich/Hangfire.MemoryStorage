@@ -285,9 +285,11 @@ namespace Hangfire.MemoryStorage
             var counters = _data.GetEnumeration<AggregatedCounterDto>();
             var keyMap = dates.ToDictionary(formatorAction, x => x);
 
-            var valuesMap = (from c in counters
-                where keyMap.Keys.Contains(c.Key)
-                select c).ToDictionary(o => o.Key, o => o.Value);
+            var valuesMap = counters
+                .Where(c => keyMap.Keys.Contains(c.Key))
+                .GroupBy(c => c.Key)
+                .Select(g => new { g.Key, Sum = g.Sum(c => c.Value) })
+                .ToDictionary(o => o.Key, o => o.Sum);
 
             foreach (var key in keyMap.Keys.Where(key => !valuesMap.ContainsKey(key)))
             {
