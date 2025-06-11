@@ -147,7 +147,7 @@ namespace Hangfire.MemoryStorage
                 CreatedAt = job.CreatedAt,
                 ExpireAt = job.ExpireAt,
                 Job = DeserializeJob(job.InvocationData, job.Arguments),
-                History = job.History,
+                History = job.History.ToList(),
                 Properties = jobParameters
             };
         }
